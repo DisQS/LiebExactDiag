@@ -36,11 +36,11 @@ LIBFLAGS  = -lblas -llapack
 #LIBFLAGS  = -llapack -lblas 
 
 PRINT1 = a2ps -g -o-
-PRINT2 = > Exactdiag.ps # | fleet -odouble
+PRINT2 = > LEDdiag.ps # | fleet -odouble
 
-Exactdiag.IC:    CommonModules.o LEDModules.o random.o main.o util.o inout.o etime.o makefile.IC
-	$(F90) $(F90FLAGS) -o Exactdiag.IC CommonModules.o LEDModules.o\
-                util.o main.o inout.o random.o etime.o $(LIBFLAGS)
+LEDdiag.IC:    CommonModules.o LEDModules.o random.o main_tmp.o util.o inout.o etime.o makefile.IC
+	$(F90) $(F90FLAGS) -o LEDdiag.IC CommonModules.o LEDModules.o\
+                util.o main_tmp.o inout.o random.o etime.o $(LIBFLAGS)
 
 CommonModules.o:     CommonModules.f90
 	$(F90) $(F90FLAGS) -c CommonModules.f90
@@ -51,26 +51,27 @@ LEDModules.o:     LEDModules.f90
 random.o:     random.f90
 	$(F90) $(F90FLAGS) -c random.f90
 
-main.o:     main.f90
-	$(F90) $(F90FLAGS) -c main.f90
+main_tmp.o:     main.f90
+	sed "s/GITVERSION/`git describe --tags --long`/g" main.f90 >main_tmp.f90
+	$(F90) $(F90FLAGS) -c main_tmp.f90 -fpp -Dgit=true
 
 util.o:     util.f90
 	$(F90) $(F90FLAGS) -c util.f90
 
 inout.o:     inout.f90
-	$(F90) $(F90FLAGS) -c inout.f90
+	$(F90) $(F90FLAGS) -c inout.f90 -fpp -Difort=true
 
 etime.o:     etime.f90
 	$(F90) $(F90FLAGS) -c etime.f90
 
-tar:	Exactdiag.tar	
-Exactdiag.tar:   makefile.* main.f90 util.f90 inout.f90 \
-                random.f90 Exactdiag.inp
-	tar -cvf Exactdiag.tar makefile.* main.f90 util.f90 \
-                inout.f90 random.f90 Exactdiag.inp
+tar:	LEDdiag.tar	
+LEDdiag.tar:   makefile.* main.f90 util.f90 inout.f90 \
+                random.f90 LEDdiag.inp
+	tar -cvf LEDdiag.tar makefile.* main.f90 util.f90 \
+                inout.f90 random.f90 LEDdiag.inp
 
 print:  
-	$(PRINT1) Exactdiag.inp main.f90 util.f90 inout.f90 random.f90 $(PRINT2)
+	$(PRINT1) LEDdiag.inp main.f90 util.f90 inout.f90 random.f90 $(PRINT2)
 
 clean:
 	rm -f core *.mod *.o

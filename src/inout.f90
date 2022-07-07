@@ -44,11 +44,11 @@ SUBROUTINE Input(IErr)
   !PRINT*,"NSeed        = ",NSeed
 
   ILine= ILine+1
-  READ(IChInp,10,ERR=20) dm
+  READ(IChInp,10,ERR=20) Dim
   !PRINT*,"Dim         = ",Dim
 
   ILine= ILine+1
-  READ(IChInp,10,ERR=20) nu
+  READ(IChInp,10,ERR=20) Nx
   !PRINT*,"Nx          = ",Nx
   
   ILine= ILine+1
@@ -68,6 +68,10 @@ SUBROUTINE Input(IErr)
   !PRINT*,"IWriteFlag   = ", IWriteFlag
   
   ILine= ILine+1
+  READ(IChInp,10,ERR=20) IStateFlag
+  !PRINT*,"IWriteFlag   = ", IStateFlag
+  
+  ILine= ILine+1
   READ(IChInp,10,ERR=20) Width0
   !PRINT*,"Width0       = ",Width0
   
@@ -80,20 +84,20 @@ SUBROUTINE Input(IErr)
   !PRINT*,"dWidth       = ", dWidth
   
   ILine= ILine+1
-  READ(IChInp,15,ERR=20) DiagDis0
-  !PRINT*,"DiagDis0     = ", DiagDis0
+  READ(IChInp,15,ERR=20) HubDis0
+  !PRINT*,"HubDis0     = ", HubDis0
   
   ILine= ILine+1
-  READ(IChInp,15,ERR=20) DiagDis1
-  !PRINT*,"DiagDis1     = ", DiagDis1
+  READ(IChInp,15,ERR=20) HubDis1
+  !PRINT*,"HubDis1     = ", HubDis1
   
   ILine= ILine+1
-  READ(IChInp,15,ERR=20) dDiagDis
-  !PRINT*,"dDiagDis     = ", dDiagDis
+  READ(IChInp,15,ERR=20) dHubDis
+  !PRINT*,"dHubDis     = ", dHubDis
 
   ILine= ILine+1
-  READ(IChInp,15,ERR=20) RimDiagDis
-  !PRINT*,"dDiagDis     = ", dDiagDis
+  READ(IChInp,15,ERR=20) RimDis
+  !PRINT*,"RimDis      = ", RimDis
 
   
 10 FORMAT(16X,I15.1)
@@ -106,19 +110,20 @@ SUBROUTINE Input(IErr)
   IF(IWriteFlag.GE.2) THEN
      PRINT*,"ISeed        = ", ISeed
      PRINT*,"NSeed        = ", NSeed
-     PRINT*,"dm           = ", dm
-     PRINT*,"nu           = ", nu
+     PRINT*,"Dim           = ", Dim
+     PRINT*,"Nx           = ", Nx
      PRINT*,"IBCFlag      = ", IBCFlag
      PRINT*,"IRNGFlag     = ", IRNGFlag
      PRINT*,"IKeepFlag    = ", IKeepFlag
      PRINT*,"IWriteFlag   = ", IWriteFlag
+     PRINT*,"IStateFlag   = ", IStateFlag
      PRINT*,"Width0       = ", Width0
      PRINT*,"Width1       = ", Width1
      PRINT*,"dWidth       = ", dWidth
-     PRINT*,"DiagDis0     = ", DiagDis0
-     PRINT*,"DiagDis1     = ", DiagDis1
-     PRINT*,"dDiagDis     = ", dDiagDis
-     Print*,"RimDiagDis   = ", RimDiagDis
+     PRINT*,"HubDis0     = ", HubDis0
+     PRINT*,"HubDis1     = ", HubDis1
+     PRINT*,"dHubDis     = ", dHubDis
+     Print*,"RimDis   = ", RimDis
     
   ENDIF
 
@@ -144,7 +149,6 @@ END SUBROUTINE Input
 FUNCTION GetFileName(fnamestr,vdata,n)
 !write(*,*) trim(GetFileName('/Output/QH_L(I4)_NL(I1)_NS(I1)_B(F5.3)_C(F4.2)_S(I5).dat',&
 !     (/L_INPUT,NLevels,NSpins,BField,Coul,Seed/),6))
-
 
   IMPLICIT NONE
 
@@ -177,13 +181,12 @@ FUNCTION GetFileName(fnamestr,vdata,n)
   RETURN
 END FUNCTION GetFileName
 
-
 !--------------------------------------------------------------------
 ! CheckOutput:
 !
 ! IErr	error code
 
-SUBROUTINE CheckOutput( IWidth, Energy, DiagDis, ISeed, IErr )
+SUBROUTINE CheckOutput( Dim, Nx, IWidth, Energy, HubDis, RimDis, PreSeed, str, IErr )
 
   USE MyNumbers 
   USE IChannels
@@ -191,44 +194,49 @@ SUBROUTINE CheckOutput( IWidth, Energy, DiagDis, ISeed, IErr )
 !  USE IPara
 
   
-  INTEGER(KIND=IKIND) IWidth, IErr, ERR, Iseed
-  REAL(KIND=RKIND) DiagDis, Energy
+  INTEGER(KIND=IKIND) Dim, Nx, IWidth, IErr, ERR, PreSeed, ISSeed
+  REAL(KIND=RKIND) HubDis, RimDis, Energy
   
-  CHARACTER*28 FileName
+  CHARACTER*100 FileName, str
   
-  !PRINT*,"DBG: CheckOutput()"
+  PRINT*,"DBG: CheckOutput()"
   
   IErr= 0
   
   !   WRITE out the input parameter
-  IF( Energy .GE. 0.0D0) THEN
-     WRITE(FileName, '(A4,I4.4,A1,I4.4,A1,I4.4,A1,I4.4,A4)') &
-          "Eval",IWidth, "-", &
-          NINT(100.0D0*ABS(Energy)),"-", &
-          NINT(100.0D0*ABS(DiagDis)), "-", &
-          !Number, "-", &
-          ISeed, ".raw"
+  IF(Energy.GE.0.0D0) THEN
+     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A5,I6.6,A3,I6.6,A3,I6.6,A2,I5.5,A4)') &
+          "Eval-", "L", Dim, Nx, &
+          "-M",IWidth, &
+          "-TarE", NINT(100.*ABS(Energy)), &
+          "-hD", NINT(100.*ABS(HubDis)), &
+          "-rD", NINT(100.*ABS(RimDis)), "-c",& 
+          PreSeed, ".raw" !"_s", ISSeed, 
   ELSE
-     WRITE(FileName, '(A4,I4.4,A2,I4.4,A1,I4.4,A1,I4.4,A4)') &
-          "Eval",IWidth, "-m", &
-          NINT(100.0D0*ABS(Energy)),"-", &
-          NINT(100.0D0*ABS(DiagDis)), "-", &
-          !Number, "-", &
-          ISeed, ".raw"
+     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,I6.6,A3,I6.6,A3,I6.6,A2,I5.5,A4)') &
+          "Eval-","L",Dim, Nx, &
+          "-M",IWidth, &
+          "-TarE-", NINT(100.*ABS(Energy)), &
+          "-hD",NINT(100.*ABS(HubDis)), &
+          "-rD", NINT(100.*ABS(RimDis)), "-c",&
+          PreSeed, ".raw" !"_s", ISSeed, 
   ENDIF
   
-  OPEN(UNIT= IChOut, ERR= 10, STATUS= 'NEW', FILE=FileName)
-  
+  OPEN(UNIT= IChOut, ERR= 10, STATUS= 'NEW', FILE= TRIM(ADJUSTL(str))//"/"//FileName)
+  !PRINT*, "CheckOutput(): ", TRIM(FileName), "DOES NOT exist -- proceeding!"
+  WRITE(*,'(A16,A54,A31)') "CheckOutput(): ", &
+       TRIM(FileName), " DOES NOT exist -- proceeding!"
+
   IErr= 0
   
 20 CLOSE(UNIT= IChOut, ERR= 100)
   
   RETURN
   
-10 WRITE(*,15) FileName
-15 FORMAT(" CheckOutput(): ", A28,&
-        " exists -- skipped!")
-  
+10 WRITE(*,'(A16,A54,A22)') "CheckOutput(): ", &
+        TRIM(FileName), " exists -- skipping!"
+
+  !PRINT*, "CheckOutput(): ", TRIM(FileName), " exists -- skipping!"
   IErr= 2
   GOTO 20
   
@@ -246,56 +254,65 @@ END SUBROUTINE CheckOutput
 !
 ! IErr	error code
 
-SUBROUTINE WriteOutputEVal(NEVals, EIGS, IWidth, Energy, DiagDis, ISeed, IErr)
-
+SUBROUTINE WriteOutputEVal(Dim, Nx, NEVals, EIGS, IWidth, Energy, HubDis, RimDis, PreSeed, str, IErr)
 
   USE MyNumbers
   USE IChannels
 !  USE DPara
 !  USE IPara
 
-  
-  INTEGER(KIND=IKIND) IWidth, IErr, ERR, NEVals, Iseed, i
-  REAL(KIND=RKIND) DiagDis, Energy
+  INTEGER(KIND=IKIND) Dim, Nx
+  INTEGER(KIND=IKIND) IWidth, IErr, ERR, NEVals, PreSeed, ISSeed, i
+  REAL(KIND=RKIND) HubDis, RimDis, Energy
   REAL(KIND=RKIND) EIGS(NEVals)
   
-  CHARACTER*28 FileName
+  CHARACTER*100 FileName, str
+
+  !PRINT*,"DBG: WriteOutputEVal()"
   
   IErr= 0
   
   !   WRITE out the input parameter
   IF(Energy.GE.0.0D0) THEN
-     WRITE(FileName, '(A4,I4.4,A1,I4.4,A1,I4.4,A1,I4.4,A4)') &
-          "Eval",IWidth, "-", &
-          NINT(100.0D0*ABS(Energy)),"-", &
-          NINT(100.0D0*ABS(DiagDis)), "-", &
-          !Number, "-", &
-          ISeed, ".raw"
+     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A5,I6.6,A3,I6.6,A3,I6.6,A2,I5.5,A4)') &
+          "Eval-", "L", Dim, Nx, &
+          "-M",IWidth, &
+          "-TarE", NINT(100.*ABS(Energy)), &
+          "-hD", NINT(100.*ABS(HubDis)), &
+          "-rD", NINT(100.*ABS(RimDis)), "-c",& 
+          PreSeed, ".raw" !"_s", ISSeed, 
   ELSE
-     WRITE(FileName, '(A4,I4.4,A2,I4.4,A1,I4.4,A1,I4.4,A4)') &
-          "Eval",IWidth, "-m", &
-          NINT(100.0D0*ABS(Energy)),"-", &
-          NINT(100.0D0*ABS(DiagDis)), "-", &
-          !Number, "-", &
-          ISeed, ".raw"
+     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,I6.6,A3,I6.6,A3,I6.6,A2,I5.5,A4)') &
+          "Eval-","L",Dim, Nx, &
+          "-M",IWidth, &
+          "-TarE-", NINT(100.*ABS(Energy)), &
+          "-hD",NINT(100.*ABS(HubDis)), &
+          "-rD", NINT(100.*ABS(RimDis)), "-c",&
+          PreSeed, ".raw" !"_s", ISSeed, 
   ENDIF
   
-  !        IF(IWriteFlag .GE. 2) THEN
-  PRINT*, "eVAL file    ", FileName
-  !        ENDIF
+!!$  IF(IWriteFlag.GE.2) THEN
+!!$     PRINT*, "WriteOutputEVal(): EVal filename=", FileName
+!!$  ENDIF
   
-  OPEN(UNIT= IChEVal, ERR= 10, STATUS='UNKNOWN', FILE=FileName)
-!!$  DO i=1,NEVals
-!!$     WRITE(IChEVal, FMT=15, ERR=20) EIGS(i)
-!!$  ENDDO
-!!$  CLOSE(UNIT=IChEVal, ERR= 30)
+!!$  OPEN(UNIT= IChEVal, ERR= 10, STATUS='UNKNOWN', FILE=Trim(str)//"/"//FileName)  
+  
+  OPEN(UNIT= IChEVal, ERR= 10, STATUS='UNKNOWN', FILE= TRIM(ADJUSTL(str))//"/"//FileName)
+  
+  IF(NEVals .GT. 0)THEN
+     DO i=1,NEVals
+        WRITE(IChEVal, FMT=15, ERR=20) EIGS(i)
+     ENDDO
+  END IF
+  
+  CLOSE(UNIT=IChEVal, ERR= 30)
   
   RETURN
   
 15 FORMAT(f30.20)
 
   !	error in OPEN detected
-10 PRINT*,"WriteOutputEVals(): ERR in OPEN()"
+10 PRINT*, "WriteOutputEVals(): ERR in OPEN()"
   IErr= 1
   RETURN
   
@@ -317,50 +334,57 @@ END SUBROUTINE WriteOutputEVal
 !
 ! IErr	error code
 
-SUBROUTINE WriteOutputEVec( Inum, NEVals, Lsize, VECS, VECS_size, &
-                   IWidth, Energy, DiagDis, ISeed, IErr)
+SUBROUTINE WriteOutputEVec( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
+                   IWidth, Energy, HubDis, RimDis, PreSeed, str, IErr)
 
   USE MyNumbers
   USE IChannels
 !  USE DPara
 !  USE IPara
 
-  INTEGER(KIND=IKIND) Inum, Iseed, IWidth, IErr, ERR, Lsize, VECS_size, NEVals, i
-  REAL(KIND=RKIND) DiagDis, Energy
+  INTEGER(KIND=IKIND) Dim, Nx
+  INTEGER(KIND=IKIND) Inum, PreSeed, ISSeed, IWidth, IErr, ERR, Lsize, VECS_size, NEVals, i
+  REAL(KIND=RKIND) HubDis, RimDis, Energy
 
   REAL(KIND=RKIND) VECS(VECS_size)
 
-  CHARACTER*40 FileName
+  CHARACTER*100 FileName, str
 
   IErr= 0
-  
+
   !   WRITE out the input parameter
   IF(Energy.GE.0.0D0) THEN
-     WRITE(FileName, '(A4,I4.4,A1,I4.4,A1,I4.4,A1,I4.4,A1,I4.4,A4)') &
-          "Evec",IWidth, "-", &
-          NINT(100.0D0*ABS(Energy)),"-", &
-          NINT(100.0D0*ABS(DiagDis)), "-", &
-          Inum, "-", &
-          ISeed, ".raw"
+     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A5,I6.6,A3,I6.6,A3,I6.6,A2,I5.5,A2,I4.4,A4)') &
+     !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
+          "Evec-","L", Dim, Nx, &
+          "-M", IWidth, &
+          "-TarE", NINT(100.0D0*ABS(Energy)), &
+          "-hD", NINT(100.0D0*ABS(HubDis)), &
+          "-rD", NINT(100.0D0*ABS(RimDis)), &
+          "-c", PreSeed, "-N", Inum, & !"_s", ISSeed, 
+          ".raw"
   ELSE
-     WRITE(FileName, '(A4,I4.4,A1,I4.4,A1,I4.4,A1,I4.4,A1,I4.4,A4)') &
-          "Evec",IWidth, "-m", &
-          NINT(100.0D0*ABS(Energy)),"-", &
-          NINT(100.0D0*ABS(DiagDis)), "-", &
-          Inum, "-", &
-          ISeed, ".raw"
+     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,I6.6,A3,I6.6,A3,I6.6,A2,I5.5,A2,I4.4,A4)') &
+     !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
+          "Evec-","L",Dim, Nx, &
+          "-M", IWidth, &
+          "-TarE-", NINT(100.0D0*ABS(Energy)), &
+          "-dD", NINT(100.0D0*ABS(HubDis)), &
+          "-rD", NINT(100.0D0*ABS(RimDis)), &
+          "-c", PreSeed, "-N", Inum, & !"_s", ISSeed, 
+          ".raw"
   ENDIF
 
-  print*,'evector file ',FileName
+  PRINT*,FileName
 
-  OPEN(UNIT= IChEVec, ERR= 40, STATUS= 'UNKNOWN', FILE=FileName)
+  OPEN(UNIT= IChEVec, ERR= 40, STATUS= 'UNKNOWN', FILE=TRIM(ADJUSTL(str))//"/"//FileName)
 
   DO i= 1+( Lsize*( Inum -1) ), Lsize*Inum
      WRITE(UNIT=IChEVec, FMT=45, ERR=50) VECS(i)
   ENDDO
 
   CLOSE(UNIT= IChEVec, ERR= 60)
-
+  
   RETURN
 
 45 FORMAT(f30.20)
@@ -381,5 +405,61 @@ SUBROUTINE WriteOutputEVec( Inum, NEVals, Lsize, VECS, VECS_size, &
   RETURN
 
 END SUBROUTINE WriteOutputEVec
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Create Folder !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+SUBROUTINE GetDirec(Dim, Nx, Width, HubDis, RimDis, Energy, str)
+  USE MyNumbers
+
+  INTEGER*4 Dim, Nx, Width, Seed
+  REAL*8 HubDis, RimDis, Energy
+  CHARACTER(len=100) str
+  CHARACTER(len=10) fid1, fid2, fid3, fid4, fid5, fid6
+  LOGICAL*4 ierr1
+
+  PRINT*, "GetDirec(): ", Dim, Nx, Width, HubDis, RimDis, Energy
+
+  WRITE(fid1,'(I1)') Dim; fid1=TRIM(ADJUSTL(fid1))
+  WRITE(fid2,'(I1)') Nx; fid2=TRIM(ADJUSTL(fid2))
+  WRITE(fid3,'(I3)') Width; fid3=TRIM(ADJUSTL(fid3))
+  WRITE(fid4,'(I6.6)') NINT(HubDis*100.); fid4=TRIM(ADJUSTL(fid4))
+  WRITE(fid5,'(I6.6)') NINT(RimDis*100.); fid5=TRIM(ADJUSTL(fid5))
+  !WRITE(fid6,'(I4.4)') Seed
+  WRITE(fid6,'(I6.6)') NINT(ABS(Energy)*100.); fid6=TRIM(ADJUSTL(fid6))
+  
+  IF(Energy.GE.ZERO) THEN
+     str='L'//TRIM(fid1)//TRIM(fid2)//'_M'//TRIM(fid3)//'_hD'//TRIM(fid4) &
+          //'_rD'//TRIM(fid5)//"_E"//TRIM(fid6)!//'_DATA'
+  ELSe
+     str='L'//TRIM(fid1)//TRIM(fid2)//'_M'//TRIM(fid3)//'_hD'//TRIM(fid4) &
+          //'_rD'//TRIM(fid5)//"_E-"//TRIM(fid6)!//'_DATA'
+  END IF
+
+!  Write(str,'(A1,I1,I1,A2,I3.1,A7,f6.1,A7,f6.1,A6)') &
+!       "L", Dim, Nx, "_M", Width, "_HubDis", HubDis, &
+!       "_RimDis", RimDis, "_.DATA"
+
+!!$  PRINT*,str
+  PRINT*, "GetDirec(): checking for ", str, Dim, Nx, Width, HubDis, RimDis, Energy
+
+#ifdef ifort
+  INQUIRE(directory=TRIM(ADJUSTL(str)), Exist=ierr1) ! ifort
+#else
+  INQUIRE(file=TRIM(ADJUSTL(str)), Exist=ierr1) ! gfortran
+#endif
+  IF(ierr1)THEN
+     PRINT*,"GetDirec(): directory exists and doesn't need to be created!"
+     WRITE(*,'(/)')
+  ELSE
+     PRINT*,"GetDirec(): directory doesn't exist and is NOW being createed!"
+     WRITE(*,'(/)')
+     CALL System("mkdir -p "//TRIM(ADJUSTL(str)) )
+  END IF
+  
+  RETURN
+  
+END SUBROUTINE GetDirec
+
 
 

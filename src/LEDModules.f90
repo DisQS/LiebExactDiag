@@ -85,18 +85,18 @@ END MODULE IConstants
 MODULE IPara
   USE MyNumbers
   INTEGER(KIND=IKIND) :: ISeed, NSeed
-  INTEGER(KIND=IKIND) :: dm, nu
+  INTEGER(KIND=IKIND) :: Dim, Nx
   INTEGER(KIND=IKIND) :: Width0, Width1, dWidth, IKeepFlag, IWriteFlag, ISortFlag
   INTEGER(KIND=IKIND) :: IFluxFlag, IBCFlag, IRNGFlag, ILevelFlag, IConvFlag
-  INTEGER(KIND=IKIND) :: IStripeFlag, IDimenFlag
+  INTEGER(KIND=IKIND) :: IStripeFlag, IDimenFlag, IStateFlag
 END MODULE IPara
 
 !!--------------------------------------------------------------------
 MODULE DPara
   USE MyNumbers
-  REAL(KIND=RKIND) :: DiagDis0,DiagDis1,dDiagDis
-  REAL(KIND=RKIND) :: DiagDis
-  REAL(KIND=RKIND) :: RimDiagDis
+  REAL(KIND=RKIND) :: HubDis0,HubDis1,dHubDis
+  REAL(KIND=RKIND) :: HubDis
+  REAL(KIND=RKIND) :: RimDis
   REAL(KIND=RKIND) :: Kappa, MagFlux
   REAL(KIND=RKIND) :: MyEpsilon
 
