@@ -85,7 +85,7 @@ PROGRAM Lieb
 
      ! ----------------------------------------------------------
      IF(IWriteFlag.GE.0) THEN
-        PRINT*, "START@ IWidth=", IWidth, " Seed=", ISeed
+        PRINT*, "START@ IWidth=", IWidth, " Config=", ISeed
      ENDIF
 
      !--------------------------------------------------------------------------
@@ -118,6 +118,11 @@ PROGRAM Lieb
      MATRIX0(:,:) = 0.0D0
      MATRIX(:,:) = 0.0D0
 
+     ! ----------------------------------------------------------
+     IF(IWriteFlag.GE.1) THEN
+        PRINT*, "--- starting matrix build"
+     ENDIF
+
      CALL MakeLiebMatrixStructrue(Dim, Nx, IWidth, ucl, n_uc, LSize, MATRIX0)
 
 !!$
@@ -138,6 +143,10 @@ PROGRAM Lieb
      part_nr(:) = 0d0
 
      DO HubDis= HubDis0,HubDis1,dHubDis
+
+        PRINT*,"main: HubDis=", HubDis
+
+        CALL GetDirec(Dim, Nx, IWidth, HubDis, RimDis, 0.0, str)
 
         DO Seed=ISeed, ISeed+NSeed-1
 
@@ -166,7 +175,7 @@ PROGRAM Lieb
               CALL genrand_real1(drandval)
               CALL SRANDOM5(ISSeed)
               drandval=DRANDOM5(ISSeed)
-              WRITE(*, '(A7,I3,A4,F6.3,A4,F5.3,A3,F6.3,A3,I5,A4,F16.10)') &
+              WRITE(*, '(A7,I3,A4,F6.3,A4,F5.3,A3,I5,A4,F16.10)') &
                    "IS: IW=", IWidth, " hD=", HubDis, " rD=", RimDis, &
                    " S=", Seed, " R=", drandval
               PRINT*, "ISSeed=", ISSeed
@@ -177,7 +186,7 @@ PROGRAM Lieb
            ! ----------------------------------------------------------
            ! CHECK if same exists and can be overwritten
            ! ----------------------------------------------------------
-           
+
            SELECT CASE(IKeepFlag)
            CASE(1)
               CALL CheckOutput( Dim,Nx, IWidth, HubDis, RimDis, &
@@ -230,9 +239,9 @@ PROGRAM Lieb
            NEIG=LSize ! this is complete diagonalization
 
            CALL WriteOutputEVal( Dim, Nx, NEIG, MATRIX, &
-                IWidth, 0. , HubDis, RimDis, Seed, str, IErr)
-           IF(IStateFlag.NE.0)THEN
-              PRINT*,"main: PJD() found eigenvectors, these will now be saved into file"
+                IWidth, 0., HubDis, RimDis, Seed, str, IErr)
+           IF(IStateFlag.NE.0) THEN
+              PRINT*,"main: DYSEV() found eigenvectors, these will now be saved into file"
               DO Inum= 1,NEIG
                  Call WriteOutputEVec(Dim, Nx, Inum, NEIG, Lsize, &
                       MATRIX, LSize, IWidth, HubDis, & 

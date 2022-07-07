@@ -268,7 +268,7 @@ SUBROUTINE WriteOutputEVal(Dim, Nx, NEVals, EIGS, IWidth, Energy, HubDis, RimDis
   
   CHARACTER*100 FileName, str
 
-  !PRINT*,"DBG: WriteOutputEVal()"
+  PRINT*,"DBG: WriteOutputEVal()"
   
   IErr= 0
   
@@ -291,9 +291,9 @@ SUBROUTINE WriteOutputEVal(Dim, Nx, NEVals, EIGS, IWidth, Energy, HubDis, RimDis
           PreSeed, ".raw" !"_s", ISSeed, 
   ENDIF
   
-!!$  IF(IWriteFlag.GE.2) THEN
-!!$     PRINT*, "WriteOutputEVal(): EVal filename=", FileName
-!!$  ENDIF
+!  IF(IWriteFlag.GE.2) THEN
+     PRINT*, "WriteOutputEVal(): ", FileName
+!  ENDIF
   
 !!$  OPEN(UNIT= IChEVal, ERR= 10, STATUS='UNKNOWN', FILE=Trim(str)//"/"//FileName)  
   
@@ -312,17 +312,17 @@ SUBROUTINE WriteOutputEVal(Dim, Nx, NEVals, EIGS, IWidth, Energy, HubDis, RimDis
 15 FORMAT(f30.20)
 
   !	error in OPEN detected
-10 PRINT*, "WriteOutputEVals(): ERR in OPEN()"
+10 PRINT*, "WriteOutputEVal(): ERR in OPEN()"
   IErr= 1
   RETURN
   
   !	error in WRITE detected
-20 PRINT*,"WriteOutputEVals(): ERR in WRITE()"
+20 PRINT*,"WriteOutputEVal(): ERR in WRITE()"
   IErr= 1
   RETURN
 
   ! ERR in CLOSE detected
-30 PRINT*,"OutputEVals(): ERR in CLOSE()"
+30 PRINT*,"OutputEVal(): ERR in CLOSE()"
   IErr= 1
   RETURN
   
@@ -350,6 +350,8 @@ SUBROUTINE WriteOutputEVec( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
 
   CHARACTER*100 FileName, str
 
+  PRINT*,"DBG: WriteOutputEvec()"
+
   IErr= 0
 
   !   WRITE out the input parameter
@@ -375,7 +377,7 @@ SUBROUTINE WriteOutputEVec( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
           ".raw"
   ENDIF
 
-  PRINT*,FileName
+  PRINT*, "WriteOutputEVec(): ", FileName
 
   OPEN(UNIT= IChEVec, ERR= 40, STATUS= 'UNKNOWN', FILE=TRIM(ADJUSTL(str))//"/"//FileName)
 

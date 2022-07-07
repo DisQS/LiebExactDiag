@@ -18,8 +18,8 @@
 F77 = ifort
 F90 = ifort
 
-#F77FLAGS = -C -g +u -r8 -132 -u              # For debugging
-F77FLAGS = -O2 -r8 -u -132   # For optimizing
+F77FLAGS = -C -g +u -r8 -132 -u              # For debugging
+#F77FLAGS = -O2 -r8 -u -132   # For optimizing
 #F77FLAGS = -xpg -C -r8 -Mprof -u                      # For profiling
 
 F90FLAGS = -C -g -r8 -132 -u                # For debugging

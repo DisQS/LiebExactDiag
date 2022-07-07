@@ -20,6 +20,8 @@ Subroutine MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr)
   INTEGER(KIND=IKIND), ALLOCATABLE :: ucl_d(:) 
   REAL(KIND=RKIND) matr(nt, nt), matr_W( nt, nt )
   
+  PRINT*,"MakeLiebMatrixStructure()"
+
   matr(:,:) = 0.0D0
 
   IF(dm==2)THEN
