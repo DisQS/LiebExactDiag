@@ -33,7 +33,7 @@ SUBROUTINE Input(IErr)
   IErr = 0
   ILine= 0
   
-  OPEN(UNIT= IChInp, ERR=120, FILE= "Exactdiag.inp",STATUS= 'OLD')
+  OPEN(UNIT= IChInp, ERR=120, FILE= "LEDdiag.inp",STATUS= 'OLD')
 
   ILine= ILine+1
   READ(IChInp,10,ERR=20) ISeed
