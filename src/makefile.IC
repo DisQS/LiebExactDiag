@@ -15,8 +15,8 @@
 #
 #-----------------------------------------------------------------#
 
-F77 = ifort
-F90 = ifort
+F77 = ifort -xHOST
+F90 = ifort -xHOST
 
 F77FLAGS = -C -g +u -r8 -132 -u              # For debugging
 #F77FLAGS = -O2 -r8 -u -132   # For optimizing
