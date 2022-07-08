@@ -110,7 +110,7 @@ SUBROUTINE Input(IErr)
   IF(IWriteFlag.GE.2) THEN
      PRINT*,"ISeed        = ", ISeed
      PRINT*,"NSeed        = ", NSeed
-     PRINT*,"Dim           = ", Dim
+     PRINT*,"Dim          = ", Dim
      PRINT*,"Nx           = ", Nx
      PRINT*,"IBCFlag      = ", IBCFlag
      PRINT*,"IRNGFlag     = ", IRNGFlag
@@ -205,18 +205,18 @@ SUBROUTINE CheckOutput( Dim, Nx, IWidth, Energy, HubDis, RimDis, PreSeed, str, I
   
   !   WRITE out the input parameter
   IF(Energy.GE.0.0D0) THEN
-     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A5,I6.6,A3,I6.6,A3,I6.6,A2,I5.5,A4)') &
+     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A5,A3,I6.6,A3,I6.6,A2,I5.5,A4)') &
           "Eval-", "L", Dim, Nx, &
           "-M",IWidth, &
-          "-TarE", NINT(100.*ABS(Energy)), &
+          "-Espec", &! NINT(100.*ABS(Energy)), &
           "-hD", NINT(100.*ABS(HubDis)), &
           "-rD", NINT(100.*ABS(RimDis)), "-c",& 
           PreSeed, ".raw" !"_s", ISSeed, 
   ELSE
-     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,I6.6,A3,I6.6,A3,I6.6,A2,I5.5,A4)') &
+     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A2,I5.5,A4)') &
           "Eval-","L",Dim, Nx, &
           "-M",IWidth, &
-          "-TarE-", NINT(100.*ABS(Energy)), &
+          "-Espec", & !NINT(100.*ABS(Energy)), &
           "-hD",NINT(100.*ABS(HubDis)), &
           "-rD", NINT(100.*ABS(RimDis)), "-c",&
           PreSeed, ".raw" !"_s", ISSeed, 
@@ -274,18 +274,18 @@ SUBROUTINE WriteOutputEVal(Dim, Nx, NEVals, EIGS, IWidth, Energy, HubDis, RimDis
   
   !   WRITE out the input parameter
   IF(Energy.GE.0.0D0) THEN
-     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A5,I6.6,A3,I6.6,A3,I6.6,A2,I5.5,A4)') &
+     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A2,I5.5,A4)') &
           "Eval-", "L", Dim, Nx, &
           "-M",IWidth, &
-          "-TarE", NINT(100.*ABS(Energy)), &
+          "-Espec", & !NINT(100.*ABS(Energy)), &
           "-hD", NINT(100.*ABS(HubDis)), &
           "-rD", NINT(100.*ABS(RimDis)), "-c",& 
           PreSeed, ".raw" !"_s", ISSeed, 
   ELSE
-     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,I6.6,A3,I6.6,A3,I6.6,A2,I5.5,A4)') &
+     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A2,I5.5,A4)') &
           "Eval-","L",Dim, Nx, &
           "-M",IWidth, &
-          "-TarE-", NINT(100.*ABS(Energy)), &
+          "-Espec", & !NINT(100.*ABS(Energy)), &
           "-hD",NINT(100.*ABS(HubDis)), &
           "-rD", NINT(100.*ABS(RimDis)), "-c",&
           PreSeed, ".raw" !"_s", ISSeed, 
@@ -346,7 +346,7 @@ SUBROUTINE WriteOutputEVec( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
   INTEGER(KIND=IKIND) Inum, PreSeed, ISSeed, IWidth, IErr, ERR, Lsize, VECS_size, NEVals, i
   REAL(KIND=RKIND) HubDis, RimDis, Energy
 
-  REAL(KIND=RKIND) VECS(VECS_size)
+  REAL(KIND=RKIND) VECS(VECS_size,VECS_size)
 
   CHARACTER*100 FileName, str
 
@@ -356,21 +356,21 @@ SUBROUTINE WriteOutputEVec( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
 
   !   WRITE out the input parameter
   IF(Energy.GE.0.0D0) THEN
-     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A5,I6.6,A3,I6.6,A3,I6.6,A2,I5.5,A2,I4.4,A4)') &
+     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A2,I5.5,A2,I4.4,A4)') &
      !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
           "Evec-","L", Dim, Nx, &
           "-M", IWidth, &
-          "-TarE", NINT(100.0D0*ABS(Energy)), &
+          "-Espec", & !NINT(100.0D0*ABS(Energy)), &
           "-hD", NINT(100.0D0*ABS(HubDis)), &
           "-rD", NINT(100.0D0*ABS(RimDis)), &
           "-c", PreSeed, "-N", Inum, & !"_s", ISSeed, 
           ".raw"
   ELSE
-     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,I6.6,A3,I6.6,A3,I6.6,A2,I5.5,A2,I4.4,A4)') &
+     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A2,I5.5,A2,I4.4,A4)') &
      !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
           "Evec-","L",Dim, Nx, &
           "-M", IWidth, &
-          "-TarE-", NINT(100.0D0*ABS(Energy)), &
+          "-Espec", & !NINT(100.0D0*ABS(Energy)), &
           "-dD", NINT(100.0D0*ABS(HubDis)), &
           "-rD", NINT(100.0D0*ABS(RimDis)), &
           "-c", PreSeed, "-N", Inum, & !"_s", ISSeed, 
@@ -381,8 +381,9 @@ SUBROUTINE WriteOutputEVec( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
 
   OPEN(UNIT= IChEVec, ERR= 40, STATUS= 'UNKNOWN', FILE=TRIM(ADJUSTL(str))//"/"//FileName)
 
-  DO i= 1+( Lsize*( Inum -1) ), Lsize*Inum
-     WRITE(UNIT=IChEVec, FMT=45, ERR=50) VECS(i)
+  !DO i= 1+( Lsize*( Inum -1) ), 1+( Lsize*( Inum -1) ) + Lsize
+  DO i=1,LSize
+     WRITE(UNIT=IChEVec, FMT=45, ERR=50) VECS(Inum,i)
   ENDDO
 
   CLOSE(UNIT= IChEVec, ERR= 60)
