@@ -22,15 +22,15 @@ F90 = ifort -xHOST
 F77FLAGS = -O2 -r8 -u -132   # For optimizing
 #F77FLAGS = -xpg -C -r8 -Mprof -u                      # For profiling
 
-F90FLAGS = -C -r8 -132 -u -g -check all -fpe0 -warn -traceback -debug extended # For debugging
-#F90FLAGS = -w90 -w95 -O2 -r8 -tpp7 -xW -u -132  # For optimizing
+#F90FLAGS = -C -r8 -132 -u -g -check all -fpe0 -warn -traceback -debug extended # For debugging
+F90FLAGS = -r8 -u -132  # For optimizing
 #F90FLAGS = -fast -r8 -C -u -132        # For profiling
 
 CC = gcc
 CCFLAGS = -O2
 
 LIBDIR = $(HOME)/f77/lib
-LIBFLAGS  = -L../lib/jadamilu_2.0.tar_IntelProcessor_Ifort_IntegeKind4byte/JADAMILU_2.0/lib/INT64Nifort -ljadamilu -mkl
+#LIBFLAGS  = -L../lib/jadamilu_2.0.tar_IntelProcessor_Ifort_IntegeKind4byte/JADAMILU_2.0/lib/INT64Nifort -ljadamilu -mkl
 #-lblas -llapack #-lg2c
 #LIBFLAGS  = -llapack -lblas 
 LIBFLAGS  = -mkl
