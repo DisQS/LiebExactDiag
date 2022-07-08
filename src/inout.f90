@@ -441,7 +441,7 @@ SUBROUTINE WriteOutputEVecBULK( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
      !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
           "Evec-","L", Dim, Nx, &
           "-M", IWidth, &
-          "-EFULL", & !NINT(100.0D0*ABS(Energy)), &
+          "-Espec", & !NINT(100.0D0*ABS(Energy)), &
           "-hD", NINT(100.0D0*ABS(HubDis)), &
           "-rD", NINT(100.0D0*ABS(RimDis)), &
           "-c", PreSeed, &! "-N", Inum, & !"_s", ISSeed, 
@@ -451,7 +451,7 @@ SUBROUTINE WriteOutputEVecBULK( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
      !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
           "Evec-","L",Dim, Nx, &
           "-M", IWidth, &
-          "-EFULL", & !NINT(100.0D0*ABS(Energy)), &
+          "-Espec", & !NINT(100.0D0*ABS(Energy)), &
           "-dD", NINT(100.0D0*ABS(HubDis)), &
           "-rD", NINT(100.0D0*ABS(RimDis)), &
           "-c", PreSeed, &! "-N", Inum, & !"_s", ISSeed, 
