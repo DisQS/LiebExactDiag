@@ -223,6 +223,8 @@ PROGRAM Lieb
            ! ----------------------------------------------------------
            ! START the diagonalizstion process
            ! ----------------------------------------------------------
+
+           PRINT*, "STARTing the diagonalizstion process"
               
            LWORK =  -1  !3*LSize
 
