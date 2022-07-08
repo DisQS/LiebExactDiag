@@ -123,7 +123,7 @@ SUBROUTINE Input(IErr)
      PRINT*,"HubDis0     = ", HubDis0
      PRINT*,"HubDis1     = ", HubDis1
      PRINT*,"dHubDis     = ", dHubDis
-     Print*,"RimDis   = ", RimDis
+     PRINT*,"RimDis   = ", RimDis
     
   ENDIF
 
@@ -511,14 +511,14 @@ SUBROUTINE GetDirec(Dim, Nx, Width, HubDis, RimDis, Energy, str)
   WRITE(fid4,'(I6.6)') NINT(HubDis*100.); fid4=TRIM(ADJUSTL(fid4))
   WRITE(fid5,'(I6.6)') NINT(RimDis*100.); fid5=TRIM(ADJUSTL(fid5))
   !WRITE(fid6,'(I4.4)') Seed
-  WRITE(fid6,'(I6.6)') NINT(ABS(Energy)*100.); fid6=TRIM(ADJUSTL(fid6))
+  !WRITE(fid6,'(I6.6)') NINT(ABS(Energy)*100.); fid6=TRIM(ADJUSTL(fid6))
   
   IF(Energy.GE.ZERO) THEN
      str='L'//TRIM(fid1)//TRIM(fid2)//'_M'//TRIM(fid3)//'_hD'//TRIM(fid4) &
-          //'_rD'//TRIM(fid5)//"_E"//TRIM(fid6)!//'_DATA'
-  ELSe
+          //'_rD'//TRIM(fid5)!//"_E"//TRIM(fid6)!//'_DATA'
+  ELSE
      str='L'//TRIM(fid1)//TRIM(fid2)//'_M'//TRIM(fid3)//'_hD'//TRIM(fid4) &
-          //'_rD'//TRIM(fid5)//"_E-"//TRIM(fid6)!//'_DATA'
+          //'_rD'//TRIM(fid5)!//"_E-"//TRIM(fid6)!//'_DATA'
   END IF
 
 !  Write(str,'(A1,I1,I1,A2,I3.1,A7,f6.1,A7,f6.1,A6)') &
