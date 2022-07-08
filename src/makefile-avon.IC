@@ -22,7 +22,7 @@ F90 = ifort -xHOST
 F77FLAGS = -O2 -r8 -u -132   # For optimizing
 #F77FLAGS = -xpg -C -r8 -Mprof -u                      # For profiling
 
-F90FLAGS = -C -g -r8 -132 -u                # For debugging
+F90FLAGS = -C -r8 -132 -u -g -check all -fpe0 -warn -traceback -debug extended # For debugging
 #F90FLAGS = -w90 -w95 -O2 -r8 -tpp7 -xW -u -132  # For optimizing
 #F90FLAGS = -fast -r8 -C -u -132        # For profiling
 
@@ -33,26 +33,27 @@ LIBDIR = $(HOME)/f77/lib
 LIBFLAGS  = -L../lib/jadamilu_2.0.tar_IntelProcessor_Ifort_IntegeKind4byte/JADAMILU_2.0/lib/INT64Nifort -ljadamilu -mkl
 #-lblas -llapack #-lg2c
 #LIBFLAGS  = -llapack -lblas 
+LIBFLAGS  = -mkl
 
 PRINT1 = a2ps -g -o-
 PRINT2 = > AMLdiag.ps # | fleet -odouble
 
-LSDdiag.IC:    CommonModules.o LSDModules.o random.o main_LSD_tmp.o util.o inout.o etime.o makefile.IC
-	$(F90) $(F90FLAGS) -o LSDdiag.IC CommonModules.o LSDModules.o\
-                util.o main_LSD_tmp.o inout.o random.o etime.o $(LIBFLAGS)
+LEDdiag.IC:    CommonModules.o LEDModules.o random.o main_tmp.o util.o inout.o etime.o makefile.IC
+	$(F90) $(F90FLAGS) -o LEDdiag.IC CommonModules.o LEDModules.o\
+                util.o main_tmp.o inout.o random.o etime.o $(LIBFLAGS)
 
 CommonModules.o:     CommonModules.f90
 	$(F90) $(F90FLAGS) -c CommonModules.f90
 
-LSDModules.o:     LSDModules.f90
-	$(F90) $(F90FLAGS) -c LSDModules.f90
+LEDModules.o:     LEDModules.f90
+	$(F90) $(F90FLAGS) -c LEDModules.f90
 
 random.o:     random.f90
 	$(F90) $(F90FLAGS) -c random.f90
 
-main_LSD_tmp.o:     main_LSD.f90
-	sed "s/GITVERSION/`git describe --tags --long`/g" main_LSD.f90 >main_LSD_tmp.f90
-	$(F90) $(F90FLAGS) -c main_LSD_tmp.f90 -fpp -Dgit=true
+main_tmp.o:     main.f90
+	sed "s/GITVERSION/`git describe --tags --long`/g" main.f90 >main_tmp.f90
+	$(F90) $(F90FLAGS) -c main_tmp.f90 -fpp -Dgit=true
 
 util.o:     util.f90
 	$(F90) $(F90FLAGS) -c util.f90
@@ -64,13 +65,13 @@ etime.o:     etime.f90
 	$(F90) $(F90FLAGS) -c etime.f90
 
 tar:	AMLdiag.tar	
-LSDdiag.tar:   makefile.* main_LSD.f90 util.f90 inout.f90 \
+LEDdiag.tar:   makefile.* main.f90 util.f90 inout.f90 \
                 random.f90 LiebSparsediag.inp
-	tar -cvf LSDdiag.tar makefile.* main_LSD.f90 util.f90 \
+	tar -cvf LEDdiag.tar makefile.* main.f90 util.f90 \
                 inout.f90 random.f90 LiebSparsediag.inp
 
 print:  
-	$(PRINT1) LSDdiag.inp main_LSD.f90 util.f90 inout.f90 random.f90 $(PRINT2)
+	$(PRINT1) LEDdiag.inp main.f90 util.f90 inout.f90 random.f90 $(PRINT2)
 
 clean:
 	rm -f core *.mod *.o
