@@ -437,24 +437,24 @@ SUBROUTINE WriteOutputEVecBULK( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
 
   !   WRITE out the input parameter
   IF(Energy.GE.0.0D0) THEN
-     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A2,I5.5,A2,I4.4,A4)') &
+     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A2,I5.5,A4)') &
      !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
           "Evec-","L", Dim, Nx, &
           "-M", IWidth, &
           "-EFULL", & !NINT(100.0D0*ABS(Energy)), &
           "-hD", NINT(100.0D0*ABS(HubDis)), &
           "-rD", NINT(100.0D0*ABS(RimDis)), &
-          "-c", PreSeed, "-N", Inum, & !"_s", ISSeed, 
+          "-c", PreSeed, &! "-N", Inum, & !"_s", ISSeed, 
           ".raw"
   ELSE
-     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A2,I5.5,A2,I4.4,A4)') &
+     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A2,I5.5,A4)') &
      !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
           "Evec-","L",Dim, Nx, &
           "-M", IWidth, &
           "-EFULL", & !NINT(100.0D0*ABS(Energy)), &
           "-dD", NINT(100.0D0*ABS(HubDis)), &
           "-rD", NINT(100.0D0*ABS(RimDis)), &
-          "-c", PreSeed, "-N", Inum, & !"_s", ISSeed, 
+          "-c", PreSeed, &! "-N", Inum, & !"_s", ISSeed, 
           ".raw"
   ENDIF
 
