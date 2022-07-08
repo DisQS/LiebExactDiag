@@ -33,14 +33,14 @@ PROGRAM Lieb
        LSize, & ! the whole number of atoms in system
        NEIG     ! #eigenvalues = LSize
 
-  REAL(KIND=RKIND), DIMENSION(:,:), ALLOCATABLE:: MATRIX0
+  REAL(KIND=RKIND), DIMENSION(:,:), ALLOCATABLE:: HAMMAT0
 
   ! Parameters for call function DSYEV()
   
   INTEGER(KIND=IKIND) LDA, LWMAX, INFO, LWORK
 
-  REAL(KIND=RKIND), DIMENSION(:), ALLOCATABLE:: W, WORK
-  REAL(KIND=RKIND), DIMENSION(:,:), ALLOCATABLE:: MATRIX
+  REAL(KIND=RKIND), DIMENSION(:), ALLOCATABLE:: EIGS, WORK
+  REAL(KIND=RKIND), DIMENSION(:,:), ALLOCATABLE:: HAMMAT
 
   INTRINSIC        INT, MIN
   EXTERNAL         DSYEV
@@ -96,6 +96,8 @@ PROGRAM Lieb
      n_uc = IWidth**Dim
      LSize = ucl * n_uc
 
+     PRINT*,"#unit cells=", n_uc, " elements/unit cell=", ucl, " total sites=", LSize
+
      !--------------------------------------------------------------------------
      ! Setting the parameters size passed to function DSYEV
      !--------------------------------------------------------------------------
@@ -107,23 +109,23 @@ PROGRAM Lieb
      ! ALLOCATing memory
      ! ----------------------------------------------------------
      
-     ALLOCATE ( MATRIX0(LSize, LSize) )
-     ALLOCATE ( w( LSize ) )
+     ALLOCATE ( HAMMAT0(LSize, LSize) )
+     ALLOCATE ( EIGS( LSize ) )
      ALLOCATE ( WORK( LWMAX ) )
-     ALLOCATE ( MATRIX( LSize, LSize ) )
+     ALLOCATE ( HAMMAT( LSize, LSize ) )
      ALLOCATE ( norm(LSize) )
      ALLOCATE ( part_nr(LSize) )
  
 
-     MATRIX0(:,:) = 0.0D0
-     MATRIX(:,:) = 0.0D0
+     HAMMAT0(:,:) = 0.0D0
+     HAMMAT(:,:) = 0.0D0
 
      ! ----------------------------------------------------------
      IF(IWriteFlag.GE.1) THEN
         PRINT*, "--- starting matrix build"
      ENDIF
 
-     CALL MakeLiebMatrixStructrue(Dim, Nx, IWidth, ucl, n_uc, LSize, MATRIX0)
+     CALL MakeLiebMatrixStructrue(Dim, Nx, IWidth, ucl, n_uc, LSize, HAMMAT0)
 
 !!$
 !!$     END DO
@@ -189,7 +191,7 @@ PROGRAM Lieb
 
            SELECT CASE(IKeepFlag)
            CASE(1)
-              CALL CheckOutput( Dim,Nx, IWidth, HubDis, RimDis, &
+              CALL CheckOutput( Dim,Nx, IWidth, 0.0, HubDis, RimDis, &
                    Seed, str, IErr )
               IF(IErr.EQ.2) CYCLE
            END SELECT
@@ -201,18 +203,18 @@ PROGRAM Lieb
            ! ENTER random values into matrix
            ! ----------------------------------------------------------
               
-           MATRIX(:,:) = MATRIX0(:,:)
+           HAMMAT(:,:) = HAMMAT0(:,:)
 
            ! Give the Lieb matrix different onsite potensial
            DO i=1, n_uc
 
               drandval= DRANDOM5(ISSeed)
-              MATRIX( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = HubDis*(drandval - 0.5D0)
+              HAMMAT( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = HubDis*(drandval - 0.5D0)
 
               DO j=1, ucl-1
 
                  drandval= DRANDOM5(ISSeed)
-                 MATRIX((i-1)*ucl + j + 1 , (i-1)*ucl + j + 1) = RimDis*(drandval - 0.5D0)
+                 HAMMAT((i-1)*ucl + j + 1 , (i-1)*ucl + j + 1) = RimDis*(drandval - 0.5D0)
 
               END DO
 
@@ -224,32 +226,41 @@ PROGRAM Lieb
               
            LWORK =  -1  !3*LSize
 
-           CALL DSYEV( 'V', 'Upper', LSize, MATRIX, LSize, W, WORK, LWORK, INFO )
+           CALL DSYEV( 'V', 'Upper', LSize, HAMMAT, LSize, EIGS, WORK, LWORK, INFO )
 
            LWORK = MIN( LWMAX, INT( WORK( 1 ) ) )
 
-           CALL DSYEV( 'V', 'Upper', LSize, MATRIX, LSize, W, WORK, LWORK, INFO )      
+           CALL DSYEV( 'V', 'Upper', LSize, HAMMAT, LSize, EIGS, WORK, LWORK, INFO )      
 
            ! ----------------------------------------------------------
            ! WRITE the eigenvalues and -vectors
            ! ----------------------------------------------------------
 
-           !CALL WriteEvals(Dim, Nx, IWidth, LSize, HubDis, RimDis, W, MATRIX, norm, part_nr, Seed, INFO)
+           !CALL WriteEvals(Dim, Nx, IWidth, LSize, HubDis, RimDis, EIGS, HAMMAT, norm, part_nr, Seed, INFO)
 
            NEIG=LSize ! this is complete diagonalization
 
-           CALL WriteOutputEVal( Dim, Nx, NEIG, MATRIX, &
+           CALL WriteOutputEVal( Dim, Nx, NEIG, EIGS, &
                 IWidth, 0., HubDis, RimDis, Seed, str, IErr)
-           IF(IStateFlag.NE.0) THEN
-              PRINT*,"main: DYSEV() found eigenvectors, these will now be saved into file"
+           SELECT CASE(IStateFlag)
+           CASE(0)
+              CONTINUE
+           CASE(1)
+              PRINT*,"main: DYSEV() eigenvectors will now be saved into individual files"
               DO Inum= 1,NEIG
                  Call WriteOutputEVec(Dim, Nx, Inum, NEIG, Lsize, &
-                      MATRIX, LSize, IWidth, HubDis, & 
+                      HAMMAT, LSize, IWidth, 0.0, HubDis, & 
                       RimDis, Seed, str, IErr)
               END DO
-           END IF !IStateFlag IF
+           CASE(2)
+              PRINT*,"main: DYSEV() eigenvectors will now be saved into single BULK file"
 
-           MATRIX(:,:) = 0d0
+              Call WriteOutputEVecBULK(Dim, Nx, Lsize, NEIG, Lsize, &
+                   HAMMAT, LSize, IWidth, 0.0, HubDis, & 
+                   RimDis, Seed, str, IErr)
+           END SELECT
+
+           HAMMAT(:,:) = 0d0
            norm(:) = 0d0
            part_nr(:) = 0d0
 
@@ -257,7 +268,7 @@ PROGRAM Lieb
 
      END DO  ! Disorder cycle
 
-     DEALLOCATE ( MATRIX0, w, WORK, MATRIX, norm, part_nr )
+     DEALLOCATE ( HAMMAT0, EIGS, WORK, HAMMAT, norm, part_nr )
 
   END DO ! IWidth cycle
 

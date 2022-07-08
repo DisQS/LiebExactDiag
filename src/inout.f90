@@ -141,7 +141,7 @@ SUBROUTINE Input(IErr)
 END SUBROUTINE Input
 
 ! --------------------------------------------------------------------
-! Input:
+! GetFileName
 !
 ! IErr	error code
 !----------------------------------------------------------------------
@@ -194,7 +194,7 @@ SUBROUTINE CheckOutput( Dim, Nx, IWidth, Energy, HubDis, RimDis, PreSeed, str, I
 !  USE IPara
 
   
-  INTEGER(KIND=IKIND) Dim, Nx, IWidth, IErr, ERR, PreSeed, ISSeed
+  INTEGER(KIND=IKIND) Dim, Nx, IWidth, IErr, PreSeed, ISSeed
   REAL(KIND=RKIND) HubDis, RimDis, Energy
   
   CHARACTER*100 FileName, str
@@ -262,7 +262,7 @@ SUBROUTINE WriteOutputEVal(Dim, Nx, NEVals, EIGS, IWidth, Energy, HubDis, RimDis
 !  USE IPara
 
   INTEGER(KIND=IKIND) Dim, Nx
-  INTEGER(KIND=IKIND) IWidth, IErr, ERR, NEVals, PreSeed, ISSeed, i
+  INTEGER(KIND=IKIND) IWidth, IErr, NEVals, PreSeed, ISSeed, i
   REAL(KIND=RKIND) HubDis, RimDis, Energy
   REAL(KIND=RKIND) EIGS(NEVals)
   
@@ -343,7 +343,7 @@ SUBROUTINE WriteOutputEVec( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
 !  USE IPara
 
   INTEGER(KIND=IKIND) Dim, Nx
-  INTEGER(KIND=IKIND) Inum, PreSeed, ISSeed, IWidth, IErr, ERR, Lsize, VECS_size, NEVals, i
+  INTEGER(KIND=IKIND) Inum, PreSeed, ISSeed, IWidth, IErr, Lsize, VECS_size, NEVals, i
   REAL(KIND=RKIND) HubDis, RimDis, Energy
 
   REAL(KIND=RKIND) VECS(VECS_size,VECS_size)
@@ -408,6 +408,88 @@ SUBROUTINE WriteOutputEVec( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
   RETURN
 
 END SUBROUTINE WriteOutputEVec
+
+!--------------------------------------------------------------------
+! WriteOutputEVecBULK:
+!
+! IErr	error code
+
+SUBROUTINE WriteOutputEVecBULK( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
+                   IWidth, Energy, HubDis, RimDis, PreSeed, str, IErr)
+
+  USE MyNumbers
+  USE IChannels
+!  USE DPara
+!  USE IPara
+
+  INTEGER(KIND=IKIND) Dim, Nx
+  INTEGER(KIND=IKIND) Inum, PreSeed, ISSeed, IWidth, IErr, Lsize, VECS_size, NEVals, i,j
+  REAL(KIND=RKIND) HubDis, RimDis, Energy
+
+  REAL(KIND=RKIND) VECS(VECS_size,VECS_size)
+
+  CHARACTER*100 FileName, str
+
+  PRINT*,"DBG: WriteOutputEvecBULK()"
+
+  IErr= 0
+
+  !   WRITE out the input parameter
+  IF(Energy.GE.0.0D0) THEN
+     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A2,I5.5,A2,I4.4,A4)') &
+     !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
+          "Evec-","L", Dim, Nx, &
+          "-M", IWidth, &
+          "-EFULL", & !NINT(100.0D0*ABS(Energy)), &
+          "-hD", NINT(100.0D0*ABS(HubDis)), &
+          "-rD", NINT(100.0D0*ABS(RimDis)), &
+          "-c", PreSeed, "-N", Inum, & !"_s", ISSeed, 
+          ".raw"
+  ELSE
+     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A2,I5.5,A2,I4.4,A4)') &
+     !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
+          "Evec-","L",Dim, Nx, &
+          "-M", IWidth, &
+          "-EFULL", & !NINT(100.0D0*ABS(Energy)), &
+          "-dD", NINT(100.0D0*ABS(HubDis)), &
+          "-rD", NINT(100.0D0*ABS(RimDis)), &
+          "-c", PreSeed, "-N", Inum, & !"_s", ISSeed, 
+          ".raw"
+  ENDIF
+
+  PRINT*, "WriteOutputEVecBULK(): ", FileName
+
+  OPEN(UNIT= IChEVec, ERR= 40, STATUS= 'UNKNOWN', FILE=TRIM(ADJUSTL(str))//"/"//FileName)
+
+  !DO i= 1+( Lsize*( Inum -1) ), 1+( Lsize*( Inum -1) ) + Lsize
+  DO j=1,Inum
+     DO i=1,LSize
+        WRITE(UNIT=IChEVec, FMT=45, ERR=50) j, i, VECS(Inum,i)
+     ENDDO
+  END DO
+
+  CLOSE(UNIT= IChEVec, ERR= 60)
+  
+  RETURN
+
+45 FORMAT(I6,I6,f30.20)
+
+  !	error in OPEN detected
+40 PRINT*,"WriteOutputEVec(): ERR in OPEN()"
+  IErr= 1
+  RETURN
+
+  !	error in WRITE detected
+50 PRINT*,"WriteOutputEVec(): ERR in WRITE()"
+  IErr= 1
+  RETURN
+
+  ! ERR in CLOSE detected
+60 PRINT*,"OutputEVec(): ERR in CLOSE()"
+  IErr= 1
+  RETURN
+
+END SUBROUTINE WriteOutputEVecBULK
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Create Folder !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

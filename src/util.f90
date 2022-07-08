@@ -1,4 +1,4 @@
-Subroutine MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr)
+SUBROUTINE MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr)
 
   USE MyNumbers
   USE IChannels
@@ -18,7 +18,7 @@ Subroutine MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr)
   LOGICAL(KIND=8) Flag
 
   INTEGER(KIND=IKIND), ALLOCATABLE :: ucl_d(:) 
-  REAL(KIND=RKIND) matr(nt, nt), matr_W( nt, nt )
+  REAL(KIND=RKIND) matr(nt, nt)! , matr_W( nt, nt )
   
   PRINT*,"MakeLiebMatrixStructure()"
 
@@ -34,7 +34,7 @@ Subroutine MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr)
      ucl_d(2) = nu + 2
      ucl_d(3) = 2 * nu + 2
   ELSE
-     Print*, "We Only Finished the 2D and 3D cases for Lieb model"
+     PRINT*, "We Only Finished the 2D and 3D cases for Lieb model"
      STOP
   END IF
     
@@ -134,7 +134,7 @@ Subroutine MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr)
 
   RETURN
 
-END Subroutine MAKELIEBMATRIXSTRUCTRUE
+END SUBROUTINE MAKELIEBMATRIXSTRUCTRUE
 
 
 
@@ -161,7 +161,7 @@ SUBROUTINE WriteEvals(dm, nu, n, nt, HubDiagDis, RimDiagDis, W, matr_W, norm, pa
        "-","WR", NINT(100.D0*ABS(RimDiagDis)),&
        "-",ISample,".raw"
 
-  Print*, "FileName: ", FileName
+  PRINT*, "FileName: ", FileName
 
   OPEN(Unit=9, FILE=FileName)
 
@@ -175,7 +175,7 @@ SUBROUTINE WriteEvals(dm, nu, n, nt, HubDiagDis, RimDiagDis, W, matr_W, norm, pa
      END DO
 
      DO i=1,nt
-        write(9,'(2f30.20)') W(i) , (norm(i)**2) / part_nr(i)
+        WRITE(9,'(2f30.20)') W(i) , (norm(i)**2) / part_nr(i)
      END DO
 
   ELSE
