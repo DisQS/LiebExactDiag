@@ -140,52 +140,52 @@ END SUBROUTINE MAKELIEBMATRIXSTRUCTRUE
 
 
 
-SUBROUTINE WriteEvals(dm, nu, n, nt, HubDiagDis, RimDiagDis, W, matr_W, norm, part_nr, ISample, INFO)
-
-  IMPLICIT NONE
-  
-  INTEGER, PARAMETER :: IKIND = SELECTED_INT_KIND(9)
-  INTEGER, PARAMETER :: RKIND = SELECTED_REAL_KIND(15,307)
-
-  INTEGER(KIND=IKIND) dm, nu, n, nt, ISample, INFO
-  INTEGER(KIND=IKIND) i, j
-  REAL(KIND=RKIND) HubDiagDis, RimDiagDis
-  REAL(KIND=RKIND) W( nt ), matr_W( nt, nt ), norm( nt ), part_nr( nt )
-  
-  CHARACTER*100 FileName
-
-  WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A1,A2,I4.4,A1,A2,I4.4,A1,I4.4,A4)')&
-       "Eval-","L",dm,nu,&
-       "-M",n, "-",&
-       "WH", NINT(100.D0*ABS(HubDiagDis)),&
-       "-","WR", NINT(100.D0*ABS(RimDiagDis)),&
-       "-",ISample,".raw"
-
-  PRINT*, "FileName: ", FileName
-
-  OPEN(Unit=9, FILE=FileName)
-
-  IF(INFO==0)THEN
-
-     DO i=1,nt
-        DO j=1,nt	
-           norm(i) = norm(i) + matr_W(i,j)**2
-           part_nr(i) = part_nr(i) + matr_W(i,j)**4
-        END DO
-     END DO
-
-     DO i=1,nt
-        WRITE(9,'(2f30.20)') W(i) , (norm(i)**2) / part_nr(i)
-     END DO
-
-  ELSE
-     PRINT*, "ERROR IN CALL DSYEV()" 
-  END IF
-
-  CLOSE(9)
-
-  RETURN
-       
-END SUBROUTINE WRITEEVALS
+!!$SUBROUTINE WriteEvals(dm, nu, n, nt, HubDiagDis, RimDiagDis, W, matr_W, norm, part_nr, ISample, INFO)
+!!$
+!!$  IMPLICIT NONE
+!!$  
+!!$  INTEGER, PARAMETER :: IKIND = SELECTED_INT_KIND(9)
+!!$  INTEGER, PARAMETER :: RKIND = SELECTED_REAL_KIND(15,307)
+!!$
+!!$  INTEGER(KIND=IKIND) dm, nu, n, nt, ISample, INFO
+!!$  INTEGER(KIND=IKIND) i, j
+!!$  REAL(KIND=RKIND) HubDiagDis, RimDiagDis
+!!$  REAL(KIND=RKIND) W( nt ), matr_W( nt, nt ), norm( nt ), part_nr( nt )
+!!$  
+!!$  CHARACTER*100 FileName
+!!$
+!!$  WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A1,A2,I4.4,A1,A2,I4.4,A1,I4.4,A4)')&
+!!$       "Eval-","L",dm,nu,&
+!!$       "-M",n, "-",&
+!!$       "WH", NINT(100.D0*ABS(HubDiagDis)),&
+!!$       "-","WR", NINT(100.D0*ABS(RimDiagDis)),&
+!!$       "-",ISample,".raw"
+!!$
+!!$  PRINT*, "FileName: ", FileName
+!!$
+!!$  OPEN(Unit=9, FILE=FileName)
+!!$
+!!$  IF(INFO==0)THEN
+!!$
+!!$     DO i=1,nt
+!!$        DO j=1,nt	
+!!$           norm(i) = norm(i) + matr_W(i,j)**2
+!!$           part_nr(i) = part_nr(i) + matr_W(i,j)**4
+!!$        END DO
+!!$     END DO
+!!$
+!!$     DO i=1,nt
+!!$        WRITE(9,'(2f30.20)') W(i) , (norm(i)**2) / part_nr(i)
+!!$     END DO
+!!$
+!!$  ELSE
+!!$     PRINT*, "ERROR IN CALL DSYEV()" 
+!!$  END IF
+!!$
+!!$  CLOSE(9)
+!!$
+!!$  RETURN
+!!$       
+!!$END SUBROUTINE WRITEEVALS
 
 
