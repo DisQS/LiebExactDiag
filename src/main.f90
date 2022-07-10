@@ -15,7 +15,8 @@ PROGRAM Lieb
   USE IPara
   USE DPara
   USE IChannels
-  USE RNG
+  USE RNG_MT
+  USE mt95
   
   IMPLICIT NONE
 
@@ -24,42 +25,48 @@ PROGRAM Lieb
   !----------------------------------------
 
   ! paramters for Lieb matrix
-  INTEGER(KIND=IKIND) IWidth
+  INTEGER(KIND=IKIND) IWidth, ISSeed(5)
   
   INTEGER(KIND=IKIND) &
-       ucl, &  ! the number of atoms in a unit cell
-       n_uc,& ! the number of unit cell
-       nt  ! the whole number of atoms in system
+       ucl, &   ! the number of atoms in a unit cell
+       n_uc, &  ! the number of unit cell
+       LSize, & ! the whole number of atoms in system
+       NEIG     ! #eigenvalues = LSize
 
-  REAL(KIND=RKIND), DIMENSION(:,:), ALLOCATABLE:: matr
+  REAL(KIND=RKIND), DIMENSION(:,:), ALLOCATABLE:: HAMMAT0
 
   ! Parameters for call function DSYEV()
   
   INTEGER(KIND=IKIND) LDA, LWMAX, INFO, LWORK
 
-  REAL(KIND=RKIND), DIMENSION(:), ALLOCATABLE:: W, WORK
-
-  REAL(KIND=RKIND), DIMENSION(:,:), ALLOCATABLE:: matr_W
+  REAL(KIND=RKIND), DIMENSION(:), ALLOCATABLE:: EIGS, WORK
+  REAL(KIND=RKIND), DIMENSION(:,:), ALLOCATABLE:: HAMMAT
 
   INTRINSIC        INT, MIN
   EXTERNAL         DSYEV
 
   ! Parameters for eigenverctor, participation numbers
   
-  INTEGER(KIND=IKIND) tt, i, j, IErr
+  INTEGER(KIND=IKIND) Seed, i, j, Inum, IErr
+  REAL(KIND=RKIND) drandval
   REAL(KIND=RKIND),ALLOCATABLE :: norm(:), part_nr(:)
 
+  CHARACTER*100 str
 
   ! ----------------------------------------------------------
   ! start of main code
   ! ----------------------------------------------------------
   
+    ! ----------------------------------------------------------
+  ! protocol feature via git
+  ! set: git tag -a v0.0 -m 'Version 0.0'
   ! ----------------------------------------------------------
-  ! protocol feature
-  ! ----------------------------------------------------------
+#ifdef git
+  PRINT*,"LiebExactDiag (", TRIM("GITVERSION"), ")"
+#else
+  PRINT*,"LiebExactDiag()"
+#endif
   
-  PRINT*,"LiebExactDia ", RStr, DStr, AStr 
-
   ! ----------------------------------------------------------
   ! inout handling
   ! ----------------------------------------------------------
@@ -78,47 +85,53 @@ PROGRAM Lieb
 
      ! ----------------------------------------------------------
      IF(IWriteFlag.GE.0) THEN
-        PRINT*, "START@ IWidth=", IWidth, " Seed=", ISeed
+        PRINT*, "START@ IWidth=", IWidth, " Config=", ISeed
      ENDIF
-
 
      !--------------------------------------------------------------------------
      ! Setting the parameters size passed to function of generating Lieb Matrix
      !--------------------------------------------------------------------------
      
-     ucl = (dm * nu) + 1
-     n_uc = IWidth**dm
-     nt = ucl * n_uc
+     ucl = (Dim * Nx) + 1
+     n_uc = IWidth**Dim
+     LSize = ucl * n_uc
+
+     PRINT*,"#unit cells=", n_uc, " elements/unit cell=", ucl, " total sites=", LSize
 
      !--------------------------------------------------------------------------
      ! Setting the parameters size passed to function DSYEV
      !--------------------------------------------------------------------------
 
-     LDA = nt
+     LDA = LSize
      LWMAX = 100000
      
      ! ----------------------------------------------------------
      ! ALLOCATing memory
      ! ----------------------------------------------------------
      
-     ALLOCATE ( matr(nt, nt) )
-     ALLOCATE ( w( nt ) )
+     ALLOCATE ( HAMMAT0(LSize, LSize) )
+     ALLOCATE ( EIGS( LSize ) )
      ALLOCATE ( WORK( LWMAX ) )
-     ALLOCATE ( matr_W( nt, nt ) )
-     ALLOCATE ( norm(nt) )
-     ALLOCATE ( part_nr(nt) )
+     ALLOCATE ( HAMMAT( LSize, LSize ) )
+     ALLOCATE ( norm(LSize) )
+     ALLOCATE ( part_nr(LSize) )
  
 
-     matr(:,:) = 0.0D0
-     matr_W(:,:) = 0.0D0
+     HAMMAT0(:,:) = 0.0D0
+     HAMMAT(:,:) = 0.0D0
 
-     CALL MakeLiebMatrixStructrue(dm, nu, IWidth, ucl, n_uc, nt, matr)
+     ! ----------------------------------------------------------
+     IF(IWriteFlag.GE.1) THEN
+        PRINT*, "--- starting matrix build"
+     ENDIF
+
+     CALL MakeLiebMatrixStructrue(Dim, Nx, IWidth, ucl, n_uc, LSize, HAMMAT0)
 
 !!$
 !!$     END DO
-!!$     DO i= 1, nt
+!!$     DO i= 1, LSize
 !!$        write(*,108) i
-!!$        Do j= 1, nt 
+!!$        Do j= 1, LSize 
 !!$           IF( matr(i,j).ne.(0.0) )Then
 !!$              Write(*,108) j
 !!$           END IF
@@ -131,39 +144,125 @@ PROGRAM Lieb
      norm(:) = 0d0
      part_nr(:) = 0d0
 
-     DO DiagDis= DiagDis0,DiagDis1,dDiagDis
+     DO HubDis= HubDis0,HubDis1,dHubDis
 
-        DO tt=ISeed, ISeed+NSeed-1
+        PRINT*,"main: HubDis=", HubDis
 
-           CALL SRANDOM(tt)
+        CALL GetDirec(Dim, Nx, IWidth, HubDis, RimDis, 0.0, str)
 
-           matr_W(:,:) = matr(:,:)
+        DO Seed=ISeed, ISeed+NSeed-1
+
+           ! ----------------------------------------------------------
+           ! Compute actual seed
+           ! ----------------------------------------------------------
+           
+           !CALL SRANDOM(Seed)
+           
+           ISSeed(1)= Seed
+           ISSeed(2)= IWidth
+           ISSeed(3)= NINT(HubDis*1000.) ! in lieu of "Energy"
+           ISSeed(4)= NINT(HubDis*1000.)
+           ISSeed(5)= NINT(RimDis*1000.)
+           
+!           CALL genrand_int31(ISSeed) ! MT95 with 5 seeds
+
+           SELECT CASE(IWriteFlag)
+           CASE(1,2)
+              PRINT*, "-- Seed=", Seed
+              PRINT*, "-> ISSeed=", ISSeed
+           CASE(3,4)
+!!$                 PRINT*, "IS: IW=", IWidth, "hD=", NINT(HubDis*1000.), "E=", NINT(Energy*1000.), &
+!!$                      "S=", Seed, "IS=", ISSeed
+              CALL genrand_int31(ISSeed) ! MT95 with 5 seeds
+              CALL genrand_real1(drandval)
+              CALL SRANDOM5(ISSeed)
+              drandval=DRANDOM5(ISSeed)
+              WRITE(*, '(A7,I3,A4,F6.3,A4,F5.3,A3,I5,A4,F16.10)') &
+                   "IS: IW=", IWidth, " hD=", HubDis, " rD=", RimDis, &
+                   " S=", Seed, " R=", drandval
+              PRINT*, "ISSeed=", ISSeed
+           CASE DEFAULT
+              PRINT*,"main: Seed=", Seed
+           END SELECT
+
+           ! ----------------------------------------------------------
+           ! CHECK if same exists and can be overwritten
+           ! ----------------------------------------------------------
+
+           SELECT CASE(IKeepFlag)
+           CASE(1)
+              CALL CheckOutput( Dim,Nx, IWidth, 0.0, HubDis, RimDis, &
+                   Seed, str, IErr )
+              IF(IErr.EQ.2) CYCLE
+           END SELECT
+           
+           !CALL genrand_int31(ISSeed) ! MT95 with 5 seeds, before: CALL SRANDOM(ISSeed
+           CALL SRANDOM5(ISSeed) ! MT95 with 5 seeds, before: CALL SRANDOM(ISSeed)
+
+           ! ----------------------------------------------------------
+           ! ENTER random values into matrix
+           ! ----------------------------------------------------------
+              
+           HAMMAT(:,:) = HAMMAT0(:,:)
 
            ! Give the Lieb matrix different onsite potensial
            DO i=1, n_uc
 
-              matr_W( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = DiagDis*(DRANDOM(tt) - 0.5D0)
+              drandval= DRANDOM5(ISSeed)
+              HAMMAT( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = HubDis*(drandval - 0.5D0)
 
               DO j=1, ucl-1
 
-                 matr_W((i-1)*ucl + j + 1 , (i-1)*ucl + j + 1) = RimDiagDis*(DRANDOM(tt) - 0.5D0)
+                 drandval= DRANDOM5(ISSeed)
+                 HAMMAT((i-1)*ucl + j + 1 , (i-1)*ucl + j + 1) = RimDis*(drandval - 0.5D0)
 
               END DO
 
            END DO
 
-           LWORK =  -1  !3*nt
+           ! ----------------------------------------------------------
+           ! START the diagonalizstion process
+           ! ----------------------------------------------------------
 
-           CALL DSYEV( 'V', 'Upper', nt, matr_W, nt, W, WORK, LWORK, INFO )
+           PRINT*, "STARTing the diagonalizstion process"
+              
+           LWORK =  -1  !3*LSize
+
+           CALL DSYEV( 'V', 'Upper', LSize, HAMMAT, LSize, EIGS, WORK, LWORK, INFO )
 
            LWORK = MIN( LWMAX, INT( WORK( 1 ) ) )
 
-           CALL DSYEV( 'V', 'Upper', nt, matr_W, nt, W, WORK, LWORK, INFO )      
+           CALL DSYEV( 'V', 'Upper', LSize, HAMMAT, LSize, EIGS, WORK, LWORK, INFO )      
 
+           ! ----------------------------------------------------------
+           ! WRITE the eigenvalues and -vectors
+           ! ----------------------------------------------------------
 
-           CALL WriteEvals(dm, nu, IWidth, nt, DiagDis, RimDiagDis, W, matr_W, norm, part_nr, tt, INFO)
+           !CALL WriteEvals(Dim, Nx, IWidth, LSize, HubDis, RimDis, EIGS, HAMMAT, norm, part_nr, Seed, INFO)
 
-           matr_W(:,:) = 0d0
+           NEIG=LSize ! this is complete diagonalization
+
+           CALL WriteOutputEVal( Dim, Nx, NEIG, EIGS, &
+                IWidth, 0., HubDis, RimDis, Seed, str, IErr)
+           SELECT CASE(IStateFlag)
+           CASE(0)
+              CONTINUE
+           CASE(1)
+              PRINT*,"main: DYSEV() eigenvectors will now be saved into individual files"
+              DO Inum= 1,NEIG
+                 Call WriteOutputEVec(Dim, Nx, Inum, NEIG, Lsize, &
+                      HAMMAT, LSize, IWidth, 0.0, HubDis, & 
+                      RimDis, Seed, str, IErr)
+              END DO
+           CASE(2)
+              PRINT*,"main: DYSEV() eigenvectors will now be saved into single BULK file"
+
+              Call WriteOutputEVecBULK(Dim, Nx, Lsize, NEIG, Lsize, &
+                   HAMMAT, LSize, IWidth, 0.0, HubDis, & 
+                   RimDis, Seed, str, IErr)
+           END SELECT
+
+           HAMMAT(:,:) = 0d0
            norm(:) = 0d0
            part_nr(:) = 0d0
 
@@ -171,45 +270,11 @@ PROGRAM Lieb
 
      END DO  ! Disorder cycle
 
-     DEALLOCATE ( matr, w, WORK, matr_W, norm, part_nr )
+     DEALLOCATE ( HAMMAT0, EIGS, WORK, HAMMAT, norm, part_nr )
 
   END DO ! IWidth cycle
 
-
 END PROGRAM Lieb
-
- 
-
-  
-
-
-!!$Function GenerateFileName(dm, nu, n, HudDiagDis, RimDiagDis)
-!!$  character(len=100) :: fid,fid2,fid3,fidU,fidD
-!!$
-!!$  CHARACTER(len=*)   :: GenerateFileName
-!!$
-!!$  WRITE(fid, '(I5)') dm ; fid = ADJUSTL(fid) 
-!!$  WRITE(fid2, '(I5)') nu ; fid2 = ADJUSTL(fid2) 
-!!$  WRITE(fid3, '(I5)') n ; fid3 = ADJUSTL(fid3) 
-!!$
-!!$  WRITE(fidU, '(3ES26.16)') HubDiagDis
-!!$  WRITE(fidU, '(F9.1)') HubDiagDis ; fidU = ADJUSTL(fidU)  
-!!$
-!!$  WRITE(fidD, '(3ES26.16)') RimDiagDis
-!!$  WRITE(fidD, '(F9.2)') HubDiagDis ; fidD = ADJUSTL(fidD)  
-!!$
-!!$  open(unit=1, file='Part_nr_Lieb_'//TRIM(fid)//'_'//TRIM(fid2)//&
-!!$       '_dis_'//TRIM(fidU)//'_'//TRIM(fidD)//'_n_'//TRIM(fid3)//'.dat',&
-!!$       form='formatted', action='write',status='replace') 
-!!$
-!!$  RETURN
-!!$
-!!$END Function GenerateFileName
-
-
-
-
-
 
 
 

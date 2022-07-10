@@ -1,0 +1,16 @@
+ISeed          = 1234
+NSeed          = 1
+Dim            = 3
+NX             = 1
+IBCFlag        = 1
+IRNGFlag       = 0
+IKeepFlag      = 0
+IWriteFlag     = 1
+IStateFlag     = 2
+Width0         = 2
+Width1         = 20
+dWidth         = 2
+HubDis0        = 10.0
+HubDis1        = 10.0
+dHubDis        = 1.0
+RimDis         = 0.0001

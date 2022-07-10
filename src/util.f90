@@ -1,4 +1,4 @@
-Subroutine MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr)
+SUBROUTINE MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr)
 
   USE MyNumbers
   USE IChannels
@@ -18,8 +18,10 @@ Subroutine MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr)
   LOGICAL(KIND=8) Flag
 
   INTEGER(KIND=IKIND), ALLOCATABLE :: ucl_d(:) 
-  REAL(KIND=RKIND) matr(nt, nt), matr_W( nt, nt )
+  REAL(KIND=RKIND) matr(nt, nt)! , matr_W( nt, nt )
   
+  PRINT*,"MakeLiebMatrixStructure()"
+
   matr(:,:) = 0.0D0
 
   IF(dm==2)THEN
@@ -32,7 +34,7 @@ Subroutine MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr)
      ucl_d(2) = nu + 2
      ucl_d(3) = 2 * nu + 2
   ELSE
-     Print*, "We Only Finished the 2D and 3D cases for Lieb model"
+     PRINT*, "We Only Finished the 2D and 3D cases for Lieb model"
      STOP
   END IF
     
@@ -132,58 +134,58 @@ Subroutine MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr)
 
   RETURN
 
-END Subroutine MAKELIEBMATRIXSTRUCTRUE
+END SUBROUTINE MAKELIEBMATRIXSTRUCTRUE
 
 
 
 
 
-SUBROUTINE WriteEvals(dm, nu, n, nt, HubDiagDis, RimDiagDis, W, matr_W, norm, part_nr, ISample, INFO)
-
-  IMPLICIT NONE
-  
-  INTEGER, PARAMETER :: IKIND = SELECTED_INT_KIND(9)
-  INTEGER, PARAMETER :: RKIND = SELECTED_REAL_KIND(15,307)
-
-  INTEGER(KIND=IKIND) dm, nu, n, nt, ISample, INFO
-  INTEGER(KIND=IKIND) i, j
-  REAL(KIND=RKIND) HubDiagDis, RimDiagDis
-  REAL(KIND=RKIND) W( nt ), matr_W( nt, nt ), norm( nt ), part_nr( nt )
-  
-  CHARACTER*100 FileName
-
-  WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A1,A2,I4.4,A1,A2,I4.4,A1,I4.4,A4)')&
-       "Eval-","L",dm,nu,&
-       "-M",n, "-",&
-       "WH", NINT(100.D0*ABS(HubDiagDis)),&
-       "-","WR", NINT(100.D0*ABS(RimDiagDis)),&
-       "-",ISample,".raw"
-
-  Print*, "FileName: ", FileName
-
-  OPEN(Unit=9, FILE=FileName)
-
-  IF(INFO==0)THEN
-
-     DO i=1,nt
-        DO j=1,nt	
-           norm(i) = norm(i) + matr_W(i,j)**2
-           part_nr(i) = part_nr(i) + matr_W(i,j)**4
-        END DO
-     END DO
-
-     DO i=1,nt
-        write(9,'(2f30.20)') W(i) , (norm(i)**2) / part_nr(i)
-     END DO
-
-  ELSE
-     PRINT*, "ERROR IN CALL DSYEV()" 
-  END IF
-
-  CLOSE(9)
-
-  RETURN
-       
-END SUBROUTINE WRITEEVALS
+!!$SUBROUTINE WriteEvals(dm, nu, n, nt, HubDiagDis, RimDiagDis, W, matr_W, norm, part_nr, ISample, INFO)
+!!$
+!!$  IMPLICIT NONE
+!!$  
+!!$  INTEGER, PARAMETER :: IKIND = SELECTED_INT_KIND(9)
+!!$  INTEGER, PARAMETER :: RKIND = SELECTED_REAL_KIND(15,307)
+!!$
+!!$  INTEGER(KIND=IKIND) dm, nu, n, nt, ISample, INFO
+!!$  INTEGER(KIND=IKIND) i, j
+!!$  REAL(KIND=RKIND) HubDiagDis, RimDiagDis
+!!$  REAL(KIND=RKIND) W( nt ), matr_W( nt, nt ), norm( nt ), part_nr( nt )
+!!$  
+!!$  CHARACTER*100 FileName
+!!$
+!!$  WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A1,A2,I4.4,A1,A2,I4.4,A1,I4.4,A4)')&
+!!$       "Eval-","L",dm,nu,&
+!!$       "-M",n, "-",&
+!!$       "WH", NINT(100.D0*ABS(HubDiagDis)),&
+!!$       "-","WR", NINT(100.D0*ABS(RimDiagDis)),&
+!!$       "-",ISample,".raw"
+!!$
+!!$  PRINT*, "FileName: ", FileName
+!!$
+!!$  OPEN(Unit=9, FILE=FileName)
+!!$
+!!$  IF(INFO==0)THEN
+!!$
+!!$     DO i=1,nt
+!!$        DO j=1,nt	
+!!$           norm(i) = norm(i) + matr_W(i,j)**2
+!!$           part_nr(i) = part_nr(i) + matr_W(i,j)**4
+!!$        END DO
+!!$     END DO
+!!$
+!!$     DO i=1,nt
+!!$        WRITE(9,'(2f30.20)') W(i) , (norm(i)**2) / part_nr(i)
+!!$     END DO
+!!$
+!!$  ELSE
+!!$     PRINT*, "ERROR IN CALL DSYEV()" 
+!!$  END IF
+!!$
+!!$  CLOSE(9)
+!!$
+!!$  RETURN
+!!$       
+!!$END SUBROUTINE WRITEEVALS
 
 
