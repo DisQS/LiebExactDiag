@@ -21,8 +21,7 @@ jobdir=$currdir
 binarydir=$HOME/Projects/LiebExactDiag/EXE
 #binarydir=/storage/disqs/LiebSparseDiag/EXE
 
-for disorder in 1.0 2.0 #20.0 25.0 30.0 35.0 40.0 10.0 9.0 8.0 7.0 6.0 5.0 4.0 3.0 2.0 1.0 15.0 14.0 13.0 12.0 11.0 0.2 0.4 0.6 0.7 0.8 1.2 1.4 1.6 1.8 2.5 3.5 4.5 5.5 6.5 7.5 8.5 9.5
-#50.0 60.0 70.0 80.0 90.0 100.0 
+for disorder in 1.0 2.0 5.0 10.0 20.0 50.0 60.0 70.0 80.0
 do
 
 echo "--- hDis=" $disorder
@@ -94,6 +93,8 @@ MY_SRUN_OPTS="-N 1 -n 1 --exclusive"
 MY_EXEC="$binarydir/$binary <LEDdiag-$disorder-{}.inp"
 
 parallel \$MY_PARALLEL_OPTS srun \$MY_SRUN_OPTS \$MY_EXEC ::: {1..$config}
+
+zip -mv LED-$disorder.zip Evec*.raw
 
 exit 0
 
