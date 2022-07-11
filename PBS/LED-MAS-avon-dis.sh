@@ -2,10 +2,11 @@
 
 # settings from input
 
-size=${1:-10}
-seed=${2:-1}
-config=${3:-2}
-keep=${4:-1}
+disorder=${1:-10.0}
+size=${2:-10}
+seed=${3:-1}
+config=${4:-2}
+keep=${5:-1}
 
 echo "LED: making for M=" $size "with starting seed=" $seed "and" $config "samples"
 
@@ -21,8 +22,8 @@ jobdir=$currdir
 binarydir=$HOME/Projects/LiebExactDiag/EXE
 #binarydir=/storage/disqs/LiebSparseDiag/EXE
 
-for disorder in 1.0 2.0 5.0 10.0 20.0 50.0 60.0 70.0 80.0
-do
+#for disorder in 1.0 2.0 5.0 10.0 20.0 50.0 60.0 70.0 80.0
+#do
 
 echo "--- hDis=" $disorder
 
@@ -94,7 +95,10 @@ MY_EXEC="$binarydir/$binary <LEDdiag-$disorder-{}.inp"
 
 parallel \$MY_PARALLEL_OPTS srun \$MY_SRUN_OPTS \$MY_EXEC ::: {1..$config}
 
-zip -mv LED-$disorder.zip Evec*.raw
+pwd
+zip -mv LED-$size.zip L31_*/Evec*.raw
+zip -m inp.zip *.inp
+zip -m sh.zip *.sh
 
 exit 0
 
@@ -111,5 +115,5 @@ sleep 1
 
 cd ..
 
-done
+#done
 
