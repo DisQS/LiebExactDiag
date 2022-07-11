@@ -74,5 +74,8 @@ LEDdiag.tar:   makefile.* main.f90 util.f90 inout.f90 \
 print:  
 	$(PRINT1) LEDdiag.inp main.f90 util.f90 inout.f90 random.f90 $(PRINT2)
 
+version:	  
+	echo `git describe --tags --long` `git branch --show-current`
+
 clean:
 	rm -f core *.mod *.o *_tmp.f90 *_genmod.f90
