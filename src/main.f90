@@ -65,7 +65,7 @@ PROGRAM Lieb
   ! set: git tag -a v0.0 -m 'Version 0.0'; git push --tags
   ! ----------------------------------------------------------
 #ifdef git
-  PRINT*,"LiebExactDiag (", TRIM("GITVERSION"), ", ", TRIM("GITBRANCH"), ")"
+  PRINT*,"LiebExactDiag (", TRIM("GITVERSION"), ", ", TRIM("GITBRANCH"), ", compiled: ", TRIM("COMPILED"), ")"
 #else
   PRINT*,"LiebExactDiag()"
 #endif
@@ -289,9 +289,9 @@ PROGRAM Lieb
                          HAMMAT(Inum, CubeSites(i)) * HAMMAT(Inum, CubeSites(i))
                     CubePart(Inum)= CubePart(Inum) + &
                          HAMMAT(Inum, CubeSites(i)) * HAMMAT(Inum, CubeSites(i)) * &
-                         HAMMAT(Inum, CubeSites(i)) * HAMMAT(Inum, CubeSites(i))
+                         HAMMAT(Inum, CubeSites(i)) * HAMMAT(Inum, CubeSites(i)) 
                  END DO
-                 CubePart(Inum)=1/CubePart(Inum)
+                 CubePart(Inum)=n_uc*n_uc/CubePart(Inum)/LSize/LSize
 
                  LiebProb(Inum)= 0.0
                  LiebPart(Inum)= 0.0
@@ -303,7 +303,7 @@ PROGRAM Lieb
                          HAMMAT(Inum, LiebSites(i)) * HAMMAT(Inum, LiebSites(i)) * &
                          HAMMAT(Inum, LiebSites(i)) * HAMMAT(Inum, LiebSites(i))
                  END DO
-                 LiebPart(Inum)=1/LiebPart(Inum)
+                 LiebPart(Inum)=(LSize-n_uc)*(LSize-n_uc)/LiebPart(Inum)/LSize/LSize
 
               ENDDO
 
