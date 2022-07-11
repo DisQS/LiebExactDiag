@@ -62,7 +62,7 @@ PROGRAM Lieb
   ! set: git tag -a v0.0 -m 'Version 0.0'
   ! ----------------------------------------------------------
 #ifdef git
-  PRINT*,"LiebExactDiag (", TRIM("GITVERSION"), ")"
+  PRINT*,"LiebExactDiag (", TRIM("GITVERSION"), ", ", TRIM("GITBRANCH"), ")"
 #else
   PRINT*,"LiebExactDiag()"
 #endif

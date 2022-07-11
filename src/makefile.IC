@@ -52,7 +52,8 @@ random.o:     random.f90
 	$(F90) $(F90FLAGS) -c random.f90
 
 main_tmp.o:     main.f90
-	sed "s/GITVERSION/`git describe --tags --long`/g" main.f90 >main_tmp.f90
+	sed "s/GITVERSION/`git describe --tags --long`/g" main.f90 | \
+	sed "s/GITBRANCH/`git branch --show-current`/g" >main_tmp.f90
 	$(F90) $(F90FLAGS) -c main_tmp.f90 -fpp -Dgit=true
 
 util.o:     util.f90
