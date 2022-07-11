@@ -59,7 +59,7 @@ PROGRAM Lieb
   
     ! ----------------------------------------------------------
   ! protocol feature via git
-  ! set: git tag -a v0.0 -m 'Version 0.0'
+  ! set: git tag -a v0.0 -m 'Version 0.0'; git push --tags
   ! ----------------------------------------------------------
 #ifdef git
   PRINT*,"LiebExactDiag (", TRIM("GITVERSION"), ", ", TRIM("GITBRANCH"), ")"
