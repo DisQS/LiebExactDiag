@@ -51,7 +51,7 @@ PROGRAM Lieb
   ! Parameters for eigenverctor, participation numbers
   
   INTEGER(KIND=IKIND) Seed, i, j, Inum, IErr
-  REAL(KIND=RKIND) drandval
+  REAL(KIND=RKIND) drandval, CubeNorm,LiebNorm
   REAL(KIND=RKIND),ALLOCATABLE :: norm(:), part_nr(:)
 
   CHARACTER*100 str
@@ -65,7 +65,7 @@ PROGRAM Lieb
   ! set: git tag -a v0.0 -m 'Version 0.0'; git push --tags
   ! ----------------------------------------------------------
 #ifdef git
-  PRINT*,"LiebExactDiag (", TRIM("GITVERSION"), ", ", TRIM("GITBRANCH"), ", compiled: ", TRIM("COMPILED"), ")"
+  PRINT*,"LiebExactDiag ", TRIM("GITVERSION"), ", ", TRIM("GITBRANCH"), ", compiled: ", TRIM("COMPILED")
 #else
   PRINT*,"LiebExactDiag()"
 #endif
@@ -234,7 +234,7 @@ PROGRAM Lieb
            ! START the diagonalizstion process
            ! ----------------------------------------------------------
 
-           PRINT*, "STARTing the diagonalizstion process"
+           PRINT*, "STARTing the diagonalization process"
               
            LWORK =  -1  !3*LSize
 
@@ -278,32 +278,66 @@ PROGRAM Lieb
            CASE(-1)
               PRINT*,"main: Cube/Lieb site projections of DYSEV() eigenvectors"
 
-              ! compute projection and participation numbers for Cube sites
+              ! compute projected probabilities 
               DO Inum= 1,NEIG
 
                  CubeProb(Inum)= 0.0
-                 CubePart(Inum)= 0.0
-
                  DO i=1,n_uc
                     CubeProb(Inum)= CubeProb(Inum) + &
                          HAMMAT(Inum, CubeSites(i)) * HAMMAT(Inum, CubeSites(i))
+                 END DO
+
+                 LiebProb(Inum)= 0.0
+                 DO i=1,LSize-n_uc
+                    LiebProb(Inum)= LiebProb(Inum) + &
+                         HAMMAT(Inum, LiebSites(i)) * HAMMAT(Inum, LiebSites(i))
+                 END DO
+              ENDDO
+
+              ! compute the projected normalizations
+              DO Inum= 1,NEIG
+
+                 CubeNorm= 0.0
+                 DO i=1,n_uc
+                    CubeNorm= CubeNorm + &
+                         HAMMAT(Inum, CubeSites(i)) * HAMMAT(Inum, CubeSites(i)) 
+                 END DO
+
+                 LiebNorm= 0.0
+                 DO i=1,LSize-n_uc
+                    LiebNorm= LiebNorm + &
+                         HAMMAT(Inum, LiebSites(i)) * HAMMAT(Inum, LiebSites(i))
+                 END DO
+
+                 !renormalize
+                 DO i=1,n_uc
+                    HAMMAT(Inum, CubeSites(i)) =  HAMMAT(Inum, CubeSites(i)) /SQRT(CubeNorm)
+                 END DO
+
+                 DO i=1,LSize-n_uc
+                    HAMMAT(Inum, LiebSites(i)) = HAMMAT(Inum, LiebSites(i)) /SQRT(LiebNorm)
+                 END DO
+
+              ENDDO
+
+              ! compute normalized participation numbers
+              DO Inum= 1,NEIG
+
+                 CubePart(Inum)= 0.0
+                 DO i=1,n_uc
                     CubePart(Inum)= CubePart(Inum) + &
                          HAMMAT(Inum, CubeSites(i)) * HAMMAT(Inum, CubeSites(i)) * &
                          HAMMAT(Inum, CubeSites(i)) * HAMMAT(Inum, CubeSites(i)) 
                  END DO
-                 CubePart(Inum)=n_uc*n_uc/CubePart(Inum)/LSize/LSize
+                 CubePart(Inum)=n_uc*n_uc/CubePart(Inum)/LSize/LSize !/LSize
 
-                 LiebProb(Inum)= 0.0
                  LiebPart(Inum)= 0.0
-
                  DO i=1,LSize-n_uc
-                    LiebProb(Inum)= LiebProb(Inum) + &
-                         HAMMAT(Inum, LiebSites(i)) * HAMMAT(Inum, LiebSites(i))
                     LiebPart(Inum)= LiebPart(Inum) + &
                          HAMMAT(Inum, LiebSites(i)) * HAMMAT(Inum, LiebSites(i)) * &
                          HAMMAT(Inum, LiebSites(i)) * HAMMAT(Inum, LiebSites(i))
                  END DO
-                 LiebPart(Inum)=(LSize-n_uc)*(LSize-n_uc)/LiebPart(Inum)/LSize/LSize
+                 LiebPart(Inum)=(LSize-n_uc)*(LSize-n_uc)/LiebPart(Inum)/LSize/LSize !/LSize
 
               ENDDO
 
