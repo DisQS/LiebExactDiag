@@ -21,7 +21,7 @@ jobdir=$currdir
 binarydir=$HOME/Projects/LiebExactDiag/EXE
 #binarydir=/storage/disqs/LiebSparseDiag/EXE
 
-for disorder in 1.0 2.0 5.0 10.0 20.0 50.0 60.0 70.0 80.0
+for disorder in 1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 20.0 50.0 60.0 70.0 80.0
 do
 
 echo "--- hDis=" $disorder
@@ -72,7 +72,7 @@ echo "IBCFlag       = 1             ">>  \$inpfile #
 echo "IRNGFlag      = 0             ">>  \$inpfile #
 echo "IKeepFlag     = $keep      ">>  \$inpfile #
 echo "IWriteFlag    = 2       ">>  \$inpfile #
-echo "IStateFlag    = 2       ">>  \$inpfile #
+echo "IStateFlag    = -1       ">>  \$inpfile #
 echo "Width0        = $size       ">>  \$inpfile #
 echo "Width1        = $size       ">>  \$inpfile #
 echo "dWidth        = 2          ">>  \$inpfile #
@@ -94,7 +94,9 @@ MY_EXEC="$binarydir/$binary <LEDdiag-$disorder-{}.inp"
 
 parallel \$MY_PARALLEL_OPTS srun \$MY_SRUN_OPTS \$MY_EXEC ::: {1..$config}
 
-zip -mv LED-$disorder.zip Evec*.raw
+#zip -mv LED-$disorder.zip Evec*.raw
+zip -m inp.zip LEDdiag-$disorder-*.inp
+zip -m sh.zip *.sh
 
 exit 0
 

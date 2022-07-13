@@ -259,6 +259,7 @@ PROGRAM Lieb
 
            CALL WriteOutputEVal( Dim, Nx, NEIG, EIGS, &
                 IWidth, 0., HubDis, RimDis, Seed, str, IErr)
+           
            SELECT CASE(IStateFlag)
            CASE(0)
               CONTINUE
