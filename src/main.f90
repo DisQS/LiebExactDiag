@@ -284,13 +284,13 @@ PROGRAM Lieb
                  CubeProb(Inum)= 0.0
                  DO i=1,n_uc
                     CubeProb(Inum)= CubeProb(Inum) + &
-                         HAMMAT(Inum, CubeSites(i)) * HAMMAT(Inum, CubeSites(i))
+                         HAMMAT(CubeSites(i),Inum) * HAMMAT(CubeSites(i),Inum)
                  END DO
 
                  LiebProb(Inum)= 0.0
                  DO i=1,LSize-n_uc
                     LiebProb(Inum)= LiebProb(Inum) + &
-                         HAMMAT(Inum, LiebSites(i)) * HAMMAT(Inum, LiebSites(i))
+                         HAMMAT(LiebSites(i),Inum) * HAMMAT(LiebSites(i),Inum)
                  END DO
               ENDDO
 
@@ -300,22 +300,22 @@ PROGRAM Lieb
                  CubeNorm= 0.0
                  DO i=1,n_uc
                     CubeNorm= CubeNorm + &
-                         HAMMAT(Inum, CubeSites(i)) * HAMMAT(Inum, CubeSites(i)) 
+                         HAMMAT(CubeSites(i),Inum) * HAMMAT(CubeSites(i),Inum) 
                  END DO
 
                  LiebNorm= 0.0
                  DO i=1,LSize-n_uc
                     LiebNorm= LiebNorm + &
-                         HAMMAT(Inum, LiebSites(i)) * HAMMAT(Inum, LiebSites(i))
+                         HAMMAT(LiebSites(i),Inum) * HAMMAT(LiebSites(i),Inum)
                  END DO
 
                  !renormalize
                  DO i=1,n_uc
-                    HAMMAT(Inum, CubeSites(i)) =  HAMMAT(Inum, CubeSites(i)) /SQRT(CubeNorm)
+                    HAMMAT(CubeSites(i),Inum) =  HAMMAT(CubeSites(i),Inum) /SQRT(CubeNorm)
                  END DO
 
                  DO i=1,LSize-n_uc
-                    HAMMAT(Inum, LiebSites(i)) = HAMMAT(Inum, LiebSites(i)) /SQRT(LiebNorm)
+                    HAMMAT(LiebSites(i),Inum) = HAMMAT(LiebSites(i),Inum) /SQRT(LiebNorm)
                  END DO
 
               ENDDO
@@ -326,16 +326,16 @@ PROGRAM Lieb
                  CubePart(Inum)= 0.0
                  DO i=1,n_uc
                     CubePart(Inum)= CubePart(Inum) + &
-                         HAMMAT(Inum, CubeSites(i)) * HAMMAT(Inum, CubeSites(i)) * &
-                         HAMMAT(Inum, CubeSites(i)) * HAMMAT(Inum, CubeSites(i)) 
+                         HAMMAT(CubeSites(i),Inum) * HAMMAT(CubeSites(i), Inum) * &
+                         HAMMAT(CubeSites(i), Inum) * HAMMAT(CubeSites(i), Inum) 
                  END DO
                  CubePart(Inum)=n_uc*n_uc/CubePart(Inum)/LSize/LSize !/LSize
 
                  LiebPart(Inum)= 0.0
                  DO i=1,LSize-n_uc
                     LiebPart(Inum)= LiebPart(Inum) + &
-                         HAMMAT(Inum, LiebSites(i)) * HAMMAT(Inum, LiebSites(i)) * &
-                         HAMMAT(Inum, LiebSites(i)) * HAMMAT(Inum, LiebSites(i))
+                         HAMMAT(LiebSites(i),Inum) * HAMMAT(LiebSites(i), Inum) * &
+                         HAMMAT(LiebSites(i), Inum) * HAMMAT(LiebSites(i), Inum)
                  END DO
                  LiebPart(Inum)=(LSize-n_uc)*(LSize-n_uc)/LiebPart(Inum)/LSize/LSize !/LSize
 
