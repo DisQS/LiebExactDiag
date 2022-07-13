@@ -326,18 +326,18 @@ PROGRAM Lieb
                  CubePart(Inum)= 0.0
                  DO i=1,n_uc
                     CubePart(Inum)= CubePart(Inum) + &
-                         HAMMAT(CubeSites(i),Inum) * HAMMAT(CubeSites(i), Inum) * &
-                         HAMMAT(CubeSites(i), Inum) * HAMMAT(CubeSites(i), Inum) 
+                         HAMMAT(CubeSites(i),Inum) * HAMMAT(CubeSites(i),Inum) * &
+                         HAMMAT(CubeSites(i),Inum) * HAMMAT(CubeSites(i),Inum) 
                  END DO
-                 CubePart(Inum)=n_uc*n_uc/CubePart(Inum)/LSize/LSize !/LSize
+                 CubePart(Inum)=CubePart(Inum) * n_uc/LSize
 
                  LiebPart(Inum)= 0.0
                  DO i=1,LSize-n_uc
                     LiebPart(Inum)= LiebPart(Inum) + &
-                         HAMMAT(LiebSites(i),Inum) * HAMMAT(LiebSites(i), Inum) * &
-                         HAMMAT(LiebSites(i), Inum) * HAMMAT(LiebSites(i), Inum)
+                         HAMMAT(LiebSites(i),Inum) * HAMMAT(LiebSites(i),Inum) * &
+                         HAMMAT(LiebSites(i),Inum) * HAMMAT(LiebSites(i),Inum)
                  END DO
-                 LiebPart(Inum)=(LSize-n_uc)*(LSize-n_uc)/LiebPart(Inum)/LSize/LSize !/LSize
+                 LiebPart(Inum)=LiebPart(Inum) * (LSize-n_uc)/LSize
 
               ENDDO
 
