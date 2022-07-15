@@ -501,6 +501,7 @@ SUBROUTINE WriteOutputEVecProj( Dim, Nx, Inum, NEVals, &
      EIGS, LSize, &
      CubeProb, CubePart, Cube_size, &
      LiebProb, LiebPart, Lieb_size, &
+     FullPart, Full_size, &
      IWidth, Energy, HubDis, RimDis, PreSeed, str, IErr)
 
   USE MyNumbers
@@ -508,13 +509,14 @@ SUBROUTINE WriteOutputEVecProj( Dim, Nx, Inum, NEVals, &
 !  USE DPara
 !  USE IPara
 
-  INTEGER(KIND=IKIND) Dim, Nx
-  INTEGER(KIND=IKIND) Inum, PreSeed, ISSeed, IWidth, IErr, Lsize, Cube_size,Lieb_size, NEVals, i,j
+  INTEGER(KIND=IKIND) Dim, Nx, Inum, PreSeed, ISSeed, IWidth, IErr
+  INTEGER(KIND=IKIND) Lsize, Cube_size,Lieb_size,Full_size, NEVals, i,j
   REAL(KIND=RKIND) HubDis, RimDis, Energy
 
   REAL(KIND=RKIND) EIGS(LSize), &
        CubeProb(Cube_size), CubePart(Cube_size), &
-       LiebProb(Lieb_size), LiebPart(Lieb_size)
+       LiebProb(Lieb_size), LiebPart(Lieb_size), &
+       FullPart(Full_size)
 
   CHARACTER*100 FileName, str
 
@@ -552,14 +554,14 @@ SUBROUTINE WriteOutputEVecProj( Dim, Nx, Inum, NEVals, &
   !DO i= 1+( Lsize*( Inum -1) ), 1+( Lsize*( Inum -1) ) + Lsize
   DO Inum=1,Cube_size
      WRITE(UNIT=IChEVec, FMT=45, ERR=50) Inum, EIGS(Inum), &
-          CubeProb(Inum),LiebProb(Inum), CubePart(Inum),LiebPart(Inum)
+          CubeProb(Inum),LiebProb(Inum), CubePart(Inum),LiebPart(Inum), FullPart(Inum)
   END DO
   
   CLOSE(UNIT= IChEVec, ERR= 60)
   
   RETURN
 
-45 FORMAT(I6,5f30.20)
+45 FORMAT(I6,6f30.20)
 
   !	error in OPEN detected
 40 PRINT*,"WriteOutputEVec(): ERR in OPEN()"
