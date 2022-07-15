@@ -19,7 +19,7 @@ SUBROUTINE MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr, cubesites, li
 
   INTEGER(KIND=IKIND), ALLOCATABLE :: ucl_d(:) 
   REAL(KIND=RKIND) matr(nt, nt)! , matr_W( nt, nt )
-  INTEGER(KIND=IKIND) cubesites(n_uc), liebsites(n-n_uc)
+  INTEGER(KIND=IKIND) cubesites(n_uc), liebsites(nt-n_uc)
   
   PRINT*,"MakeLiebMatrixStructure()"
 
