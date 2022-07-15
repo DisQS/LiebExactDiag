@@ -492,6 +492,92 @@ SUBROUTINE WriteOutputEVecBULK( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
 
 END SUBROUTINE WriteOutputEVecBULK
 
+!--------------------------------------------------------------------
+! WriteOutputEVecProj:
+!
+! IErr	error code
+
+SUBROUTINE WriteOutputEVecProj( Dim, Nx, Inum, NEVals, &
+     EIGS, LSize, &
+     CubeProb, CubePart, Cube_size, &
+     LiebProb, LiebPart, Lieb_size, &
+     IWidth, Energy, HubDis, RimDis, PreSeed, str, IErr)
+
+  USE MyNumbers
+  USE IChannels
+!  USE DPara
+!  USE IPara
+
+  INTEGER(KIND=IKIND) Dim, Nx
+  INTEGER(KIND=IKIND) Inum, PreSeed, ISSeed, IWidth, IErr, Lsize, Cube_size,Lieb_size, NEVals, i,j
+  REAL(KIND=RKIND) HubDis, RimDis, Energy
+
+  REAL(KIND=RKIND) EIGS(LSize), &
+       CubeProb(Cube_size), CubePart(Cube_size), &
+       LiebProb(Lieb_size), LiebPart(Lieb_size)
+
+  CHARACTER*100 FileName, str
+
+  PRINT*,"DBG: WriteOutputEvecBULK()"
+
+  IErr= 0
+
+  !   WRITE out the input parameter
+  IF(Energy.GE.0.0D0) THEN
+     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A2,I5.5,A4)') &
+     !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
+          "Evec-","L", Dim, Nx, &
+          "-M", IWidth, &
+          "-Eproj", & !NINT(100.0D0*ABS(Energy)), &
+          "-hD", NINT(100.0D0*ABS(HubDis)), &
+          "-rD", NINT(100.0D0*ABS(RimDis)), &
+          "-c", PreSeed, &! "-N", Inum, & !"_s", ISSeed, 
+          ".raw"
+  ELSE
+     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A2,I5.5,A4)') &
+     !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
+          "Evec-","L",Dim, Nx, &
+          "-M", IWidth, &
+          "-Eproj", & !NINT(100.0D0*ABS(Energy)), &
+          "-dD", NINT(100.0D0*ABS(HubDis)), &
+          "-rD", NINT(100.0D0*ABS(RimDis)), &
+          "-c", PreSeed, &! "-N", Inum, & !"_s", ISSeed, 
+          ".raw"
+  ENDIF
+
+  PRINT*, "WriteOutputEVecBULK(): ", FileName
+
+  OPEN(UNIT= IChEVec, ERR= 40, STATUS= 'UNKNOWN', FILE=TRIM(ADJUSTL(str))//"/"//FileName)
+
+  !DO i= 1+( Lsize*( Inum -1) ), 1+( Lsize*( Inum -1) ) + Lsize
+  DO Inum=1,Cube_size
+     WRITE(UNIT=IChEVec, FMT=45, ERR=50) Inum, EIGS(Inum), &
+          CubeProb(Inum),LiebProb(Inum), CubePart(Inum),LiebPart(Inum)
+  END DO
+  
+  CLOSE(UNIT= IChEVec, ERR= 60)
+  
+  RETURN
+
+45 FORMAT(I6,5f30.20)
+
+  !	error in OPEN detected
+40 PRINT*,"WriteOutputEVec(): ERR in OPEN()"
+  IErr= 1
+  RETURN
+
+  !	error in WRITE detected
+50 PRINT*,"WriteOutputEVec(): ERR in WRITE()"
+  IErr= 1
+  RETURN
+
+  ! ERR in CLOSE detected
+60 PRINT*,"OutputEVec(): ERR in CLOSE()"
+  IErr= 1
+  RETURN
+
+END SUBROUTINE WriteOutputEVecProj
+
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Create Folder !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -535,11 +621,11 @@ SUBROUTINE GetDirec(Dim, Nx, Width, HubDis, RimDis, Energy, str)
   INQUIRE(file=TRIM(ADJUSTL(str)), Exist=ierr1) ! gfortran
 #endif
   IF(ierr1)THEN
-     PRINT*,"GetDirec(): directory exists and doesn't need to be created!"
-     WRITE(*,'(/)')
+     PRINT*,"GetDirec(): using existing directory ", TRIM(ADJUSTL(str))
+     !WRITE(*,'(/)')
   ELSE
-     PRINT*,"GetDirec(): directory doesn't exist and is NOW being createed!"
-     WRITE(*,'(/)')
+     PRINT*,"GetDirec(): creating NEW directory ", TRIM(ADJUSTL(str))
+     !WRITE(*,'(/)')
      CALL System("mkdir -p "//TRIM(ADJUSTL(str)) )
   END IF
   

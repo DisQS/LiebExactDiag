@@ -73,7 +73,7 @@ echo "IBCFlag       = 1             ">>  \$inpfile #
 echo "IRNGFlag      = 0             ">>  \$inpfile #
 echo "IKeepFlag     = $keep      ">>  \$inpfile #
 echo "IWriteFlag    = 2       ">>  \$inpfile #
-echo "IStateFlag    = 2       ">>  \$inpfile #
+echo "IStateFlag    = -1       ">>  \$inpfile #
 echo "Width0        = $size       ">>  \$inpfile #
 echo "Width1        = $size       ">>  \$inpfile #
 echo "dWidth        = 2          ">>  \$inpfile #
@@ -96,8 +96,8 @@ MY_EXEC="$binarydir/$binary <LEDdiag-$disorder-{}.inp"
 parallel \$MY_PARALLEL_OPTS srun \$MY_SRUN_OPTS \$MY_EXEC ::: {1..$config}
 
 pwd
-zip -mv LED-$size.zip L31_*/Evec*.raw
-zip -m inp.zip *.inp
+#zip -mv LED-$size.zip L31_*/Evec*.raw
+zip -m inp.zip LEDdiag-$disorder-*.inp
 zip -m sh.zip *.sh
 
 exit 0
