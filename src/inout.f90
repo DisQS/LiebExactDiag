@@ -507,7 +507,7 @@ SUBROUTINE WriteOutputEVecProj( Dim, Nx, Inum, NEVals, &
   USE MyNumbers
   USE IChannels
 !  USE DPara
-!  USE IPara
+  !USE IPara
 
   INTEGER(KIND=IKIND) Dim, Nx, Inum, PreSeed, ISSeed, IWidth, IErr
   INTEGER(KIND=IKIND) Lsize, Cube_size,Lieb_size,Full_size, NEVals, i,j
@@ -555,6 +555,9 @@ SUBROUTINE WriteOutputEVecProj( Dim, Nx, Inum, NEVals, &
   DO Inum=1,Cube_size
      WRITE(UNIT=IChEVec, FMT=45, ERR=50) Inum, EIGS(Inum), &
           CubeProb(Inum),LiebProb(Inum), CubePart(Inum),LiebPart(Inum), FullPart(Inum)
+     IF( MOD(Inum,Cube_size/10)==0 ) THEN
+        PRINT*,FileName, NINT(REAL(Inum)/REAL(Cube_size)*100)
+     END IF
   END DO
   
   CLOSE(UNIT= IChEVec, ERR= 60)
