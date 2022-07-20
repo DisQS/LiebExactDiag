@@ -6,7 +6,7 @@
 !
 !--------------------------------------------------------------------------------------
 
-PROGRAM Lieb
+PROGRAM LiebExactDiag
 
 !!$  use, intrinsic :: iso_c_binding
   USE MyNumbers  
@@ -43,7 +43,7 @@ PROGRAM Lieb
   REAL(KIND=RKIND), DIMENSION(:), ALLOCATABLE:: EIGS, WORK
   REAL(KIND=RKIND), DIMENSION(:,:), ALLOCATABLE:: HAMMAT
   
-  REAL(KIND=RKIND), DIMENSION(:), ALLOCATABLE:: CubeProb, CubePart, LiebProb, LiebPart
+  REAL(KIND=RKIND), DIMENSION(:), ALLOCATABLE:: CubeProb, CubePart, LiebProb, LiebPart, FullPart
 
   INTRINSIC        INT, MIN
   EXTERNAL         DSYEV
@@ -122,6 +122,7 @@ PROGRAM Lieb
      ALLOCATE( LiebProb( LSize ) )
      ALLOCATE( CubePart( LSize ) )
      ALLOCATE( LiebPart( LSize ) )
+     ALLOCATE( FullPart( LSize ) )
      !ALLOCATE ( norm(LSize) )
      !ALLOCATE ( part_nr(LSize) )
  
@@ -293,7 +294,22 @@ PROGRAM Lieb
                     LiebProb(Inum)= LiebProb(Inum) + &
                          HAMMAT(LiebSites(i),Inum) * HAMMAT(LiebSites(i),Inum)
                  END DO
+
               ENDDO
+
+              ! compute FULL participation numbers (already normalized) 
+              DO Inum= 1,NEIG
+
+                 FullPart(Inum)= 0.0
+                 DO i=1,LSize
+                    FullPart(Inum)= FullPart(Inum) + &
+                         HAMMAT(i,Inum) * HAMMAT(i,Inum) * &
+                         HAMMAT(i,Inum) * HAMMAT(i,Inum) 
+                 END DO
+                 FullPart(Inum)=1.0D0/FullPart(Inum) /LSize
+                 !PRINT*,Inum, FullPart(Inum)
+
+              END DO
 
               ! compute the projected normalizations
               DO Inum= 1,NEIG
@@ -330,7 +346,7 @@ PROGRAM Lieb
                          HAMMAT(CubeSites(i),Inum) * HAMMAT(CubeSites(i),Inum) * &
                          HAMMAT(CubeSites(i),Inum) * HAMMAT(CubeSites(i),Inum) 
                  END DO
-                 CubePart(Inum)=CubePart(Inum) * n_uc/LSize
+                 CubePart(Inum)=1/CubePart(Inum) /n_uc
 
                  LiebPart(Inum)= 0.0
                  DO i=1,LSize-n_uc
@@ -338,7 +354,7 @@ PROGRAM Lieb
                          HAMMAT(LiebSites(i),Inum) * HAMMAT(LiebSites(i),Inum) * &
                          HAMMAT(LiebSites(i),Inum) * HAMMAT(LiebSites(i),Inum)
                  END DO
-                 LiebPart(Inum)=LiebPart(Inum) * (LSize-n_uc)/LSize
+                 LiebPart(Inum)=1/LiebPart(Inum) /(LSize-n_uc)
 
               ENDDO
 
@@ -346,6 +362,7 @@ PROGRAM Lieb
                    EIGS, LSize, &
                    CubeProb, CubePart, Lsize, &
                    LiebProb, LiebPart, LSize, &
+                   FullPart, LSize, &
                    IWidth, 0.0, HubDis, & 
                    RimDis, Seed, str, IErr)
               
@@ -358,8 +375,10 @@ PROGRAM Lieb
      DEALLOCATE ( HAMMAT0, EIGS, WORK, HAMMAT, CubeSites, LiebSites )
 
   END DO ! IWidth cycle
+  
+  STOP 'LiebExactDiag'
 
-END PROGRAM Lieb
+END PROGRAM LiebExactDiag
 
 
 

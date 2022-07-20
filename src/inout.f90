@@ -501,24 +501,28 @@ SUBROUTINE WriteOutputEVecProj( Dim, Nx, Inum, NEVals, &
      EIGS, LSize, &
      CubeProb, CubePart, Cube_size, &
      LiebProb, LiebPart, Lieb_size, &
+     FullPart, Full_size, &
      IWidth, Energy, HubDis, RimDis, PreSeed, str, IErr)
 
   USE MyNumbers
   USE IChannels
 !  USE DPara
-!  USE IPara
+  !USE IPara
 
-  INTEGER(KIND=IKIND) Dim, Nx
-  INTEGER(KIND=IKIND) Inum, PreSeed, ISSeed, IWidth, IErr, Lsize, Cube_size,Lieb_size, NEVals, i,j
+  USE iso_fortran_env, ONLY: output_unit
+
+  INTEGER(KIND=IKIND) Dim, Nx, Inum, PreSeed, ISSeed, IWidth, IErr
+  INTEGER(KIND=IKIND) Lsize, Cube_size,Lieb_size,Full_size, NEVals, i,j
   REAL(KIND=RKIND) HubDis, RimDis, Energy
 
   REAL(KIND=RKIND) EIGS(LSize), &
        CubeProb(Cube_size), CubePart(Cube_size), &
-       LiebProb(Lieb_size), LiebPart(Lieb_size)
+       LiebProb(Lieb_size), LiebPart(Lieb_size), &
+       FullPart(Full_size)
 
   CHARACTER*100 FileName, str
 
-  PRINT*,"DBG: WriteOutputEvecBULK()"
+  PRINT*,"DBG: WriteOutputEvecProj()"
 
   IErr= 0
 
@@ -545,21 +549,25 @@ SUBROUTINE WriteOutputEVecProj( Dim, Nx, Inum, NEVals, &
           ".raw"
   ENDIF
 
-  PRINT*, "WriteOutputEVecBULK(): ", FileName
+  PRINT*, "WriteOutputEVecProj(): ", FileName
 
   OPEN(UNIT= IChEVec, ERR= 40, STATUS= 'UNKNOWN', FILE=TRIM(ADJUSTL(str))//"/"//FileName)
 
   !DO i= 1+( Lsize*( Inum -1) ), 1+( Lsize*( Inum -1) ) + Lsize
   DO Inum=1,Cube_size
      WRITE(UNIT=IChEVec, FMT=45, ERR=50) Inum, EIGS(Inum), &
-          CubeProb(Inum),LiebProb(Inum), CubePart(Inum),LiebPart(Inum)
+          CubeProb(Inum),LiebProb(Inum), CubePart(Inum),LiebPart(Inum), FullPart(Inum)
+!!$     IF( MOD(Inum,Cube_size/10)==0 ) THEN
+!!$        WRITE( output_unit, '(I4)', advance = 'no') NINT(REAL(Inum)/REAL(Cube_size)*100)
+!!$     END IF
   END DO
+!!$  PRINT*, " "
   
   CLOSE(UNIT= IChEVec, ERR= 60)
   
   RETURN
 
-45 FORMAT(I6,5f30.20)
+45 FORMAT(I6,6f30.20)
 
   !	error in OPEN detected
 40 PRINT*,"WriteOutputEVec(): ERR in OPEN()"
