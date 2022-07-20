@@ -509,6 +509,8 @@ SUBROUTINE WriteOutputEVecProj( Dim, Nx, Inum, NEVals, &
 !  USE DPara
   !USE IPara
 
+  USE iso_fortran_env, ONLY: output_unit
+
   INTEGER(KIND=IKIND) Dim, Nx, Inum, PreSeed, ISSeed, IWidth, IErr
   INTEGER(KIND=IKIND) Lsize, Cube_size,Lieb_size,Full_size, NEVals, i,j
   REAL(KIND=RKIND) HubDis, RimDis, Energy
@@ -520,7 +522,7 @@ SUBROUTINE WriteOutputEVecProj( Dim, Nx, Inum, NEVals, &
 
   CHARACTER*100 FileName, str
 
-  PRINT*,"DBG: WriteOutputEvecBULK()"
+  PRINT*,"DBG: WriteOutputEvecProj()"
 
   IErr= 0
 
@@ -547,7 +549,7 @@ SUBROUTINE WriteOutputEVecProj( Dim, Nx, Inum, NEVals, &
           ".raw"
   ENDIF
 
-  PRINT*, "WriteOutputEVecBULK(): ", FileName
+  PRINT*, "WriteOutputEVecProj(): ", FileName
 
   OPEN(UNIT= IChEVec, ERR= 40, STATUS= 'UNKNOWN', FILE=TRIM(ADJUSTL(str))//"/"//FileName)
 
@@ -555,10 +557,11 @@ SUBROUTINE WriteOutputEVecProj( Dim, Nx, Inum, NEVals, &
   DO Inum=1,Cube_size
      WRITE(UNIT=IChEVec, FMT=45, ERR=50) Inum, EIGS(Inum), &
           CubeProb(Inum),LiebProb(Inum), CubePart(Inum),LiebPart(Inum), FullPart(Inum)
-     IF( MOD(Inum,Cube_size/10)==0 ) THEN
-        PRINT*,FileName, NINT(REAL(Inum)/REAL(Cube_size)*100)
-     END IF
+!!$     IF( MOD(Inum,Cube_size/10)==0 ) THEN
+!!$        WRITE( output_unit, '(I4)', advance = 'no') NINT(REAL(Inum)/REAL(Cube_size)*100)
+!!$     END IF
   END DO
+!!$  PRINT*, " "
   
   CLOSE(UNIT= IChEVec, ERR= 60)
   
