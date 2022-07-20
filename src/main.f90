@@ -39,8 +39,11 @@ PROGRAM Lieb
   
   INTEGER(KIND=IKIND) LDA, LWMAX, INFO, LWORK
 
+  INTEGER(KIND=IKIND), DIMENSION(:), ALLOCATABLE:: LiebSites, CubeSites
   REAL(KIND=RKIND), DIMENSION(:), ALLOCATABLE:: EIGS, WORK
   REAL(KIND=RKIND), DIMENSION(:,:), ALLOCATABLE:: HAMMAT
+  
+  REAL(KIND=RKIND), DIMENSION(:), ALLOCATABLE:: CubeProb, CubePart, LiebProb, LiebPart
 
   INTRINSIC        INT, MIN
   EXTERNAL         DSYEV
@@ -48,7 +51,7 @@ PROGRAM Lieb
   ! Parameters for eigenverctor, participation numbers
   
   INTEGER(KIND=IKIND) Seed, i, j, Inum, IErr
-  REAL(KIND=RKIND) drandval
+  REAL(KIND=RKIND) drandval, CubeNorm,LiebNorm
   REAL(KIND=RKIND),ALLOCATABLE :: norm(:), part_nr(:)
 
   CHARACTER*100 str
@@ -59,10 +62,10 @@ PROGRAM Lieb
   
     ! ----------------------------------------------------------
   ! protocol feature via git
-  ! set: git tag -a v0.0 -m 'Version 0.0'
+  ! set: git tag -a v0.0 -m 'Version 0.0'; git push --tags
   ! ----------------------------------------------------------
 #ifdef git
-  PRINT*,"LiebExactDiag (", TRIM("GITVERSION"), ", ", TRIM("GITBRANCH"), ")"
+  PRINT*,"LiebExactDiag ", TRIM("GITVERSION"), ", ", TRIM("GITBRANCH"), ", compiled: ", TRIM("COMPILED")
 #else
   PRINT*,"LiebExactDiag()"
 #endif
@@ -92,9 +95,9 @@ PROGRAM Lieb
      ! Setting the parameters size passed to function of generating Lieb Matrix
      !--------------------------------------------------------------------------
      
-     ucl = (Dim * Nx) + 1
-     n_uc = IWidth**Dim
-     LSize = ucl * n_uc
+     ucl = (Dim * Nx) + 1 ! number of elements in unit cell
+     n_uc = IWidth**Dim   ! number of unit cells
+     LSize = ucl * n_uc   ! number of sites
 
      PRINT*,"#unit cells=", n_uc, " elements/unit cell=", ucl, " total sites=", LSize
 
@@ -113,19 +116,26 @@ PROGRAM Lieb
      ALLOCATE ( EIGS( LSize ) )
      ALLOCATE ( WORK( LWMAX ) )
      ALLOCATE ( HAMMAT( LSize, LSize ) )
-     ALLOCATE ( norm(LSize) )
-     ALLOCATE ( part_nr(LSize) )
+     ALLOCATE ( CubeSites( n_uc ) )
+     ALLOCATE ( LiebSites( LSize - n_uc ) )
+     ALLOCATE( CubeProb( LSize ) )
+     ALLOCATE( LiebProb( LSize ) )
+     ALLOCATE( CubePart( LSize ) )
+     ALLOCATE( LiebPart( LSize ) )
+     !ALLOCATE ( norm(LSize) )
+     !ALLOCATE ( part_nr(LSize) )
  
-
      HAMMAT0(:,:) = 0.0D0
-     HAMMAT(:,:) = 0.0D0
 
      ! ----------------------------------------------------------
      IF(IWriteFlag.GE.1) THEN
         PRINT*, "--- starting matrix build"
      ENDIF
 
-     CALL MakeLiebMatrixStructrue(Dim, Nx, IWidth, ucl, n_uc, LSize, HAMMAT0)
+     CALL MakeLiebMatrixStructrue(Dim, Nx, IWidth, ucl, n_uc, LSize, HAMMAT0, CubeSites, LiebSites)
+
+     !print*,"CubeSites=", CubeSites
+     !print*,"LiebSites=", LiebSites
 
 !!$
 !!$     END DO
@@ -141,9 +151,6 @@ PROGRAM Lieb
 !!$     END DO
 !!$108  format(1x,1I3\)
      
-     norm(:) = 0d0
-     part_nr(:) = 0d0
-
      DO HubDis= HubDis0,HubDis1,dHubDis
 
         PRINT*,"main: HubDis=", HubDis
@@ -203,6 +210,9 @@ PROGRAM Lieb
            ! ENTER random values into matrix
            ! ----------------------------------------------------------
               
+           !norm(:) = 0d0
+           !part_nr(:) = 0d0
+
            HAMMAT(:,:) = HAMMAT0(:,:)
 
            ! Give the Lieb matrix different onsite potensial
@@ -224,7 +234,7 @@ PROGRAM Lieb
            ! START the diagonalizstion process
            ! ----------------------------------------------------------
 
-           PRINT*, "STARTing the diagonalizstion process"
+           PRINT*, "STARTing the diagonalization process"
               
            LWORK =  -1  !3*LSize
 
@@ -232,7 +242,12 @@ PROGRAM Lieb
 
            LWORK = MIN( LWMAX, INT( WORK( 1 ) ) )
 
-           CALL DSYEV( 'V', 'Upper', LSize, HAMMAT, LSize, EIGS, WORK, LWORK, INFO )      
+           CALL DSYEV( 'V', 'Upper', LSize, HAMMAT, LSize, EIGS, WORK, LWORK, INFO ) 
+
+           IF(INFO.NE.0) THEN
+              PRINT*,"main: DYSEV(INFO)=", INFO
+              STOP
+           ENDIF
 
            ! ----------------------------------------------------------
            ! WRITE the eigenvalues and -vectors
@@ -244,6 +259,7 @@ PROGRAM Lieb
 
            CALL WriteOutputEVal( Dim, Nx, NEIG, EIGS, &
                 IWidth, 0., HubDis, RimDis, Seed, str, IErr)
+           
            SELECT CASE(IStateFlag)
            CASE(0)
               CONTINUE
@@ -258,19 +274,88 @@ PROGRAM Lieb
               PRINT*,"main: DYSEV() eigenvectors will now be saved into single BULK file"
 
               Call WriteOutputEVecBULK(Dim, Nx, Lsize, NEIG, Lsize, &
-                   HAMMAT, LSize, IWidth, 0.0, HubDis, & 
+                   EIGS, LSize, IWidth, 0.0, HubDis, & 
                    RimDis, Seed, str, IErr)
-           END SELECT
+           CASE(-1)
+              PRINT*,"main: Cube/Lieb site projections of DYSEV() eigenvectors"
 
-           HAMMAT(:,:) = 0d0
-           norm(:) = 0d0
-           part_nr(:) = 0d0
+              ! compute projected probabilities 
+              DO Inum= 1,NEIG
+
+                 CubeProb(Inum)= 0.0
+                 DO i=1,n_uc
+                    CubeProb(Inum)= CubeProb(Inum) + &
+                         HAMMAT(CubeSites(i),Inum) * HAMMAT(CubeSites(i),Inum)
+                 END DO
+
+                 LiebProb(Inum)= 0.0
+                 DO i=1,LSize-n_uc
+                    LiebProb(Inum)= LiebProb(Inum) + &
+                         HAMMAT(LiebSites(i),Inum) * HAMMAT(LiebSites(i),Inum)
+                 END DO
+              ENDDO
+
+              ! compute the projected normalizations
+              DO Inum= 1,NEIG
+
+                 CubeNorm= 0.0
+                 DO i=1,n_uc
+                    CubeNorm= CubeNorm + &
+                         HAMMAT(CubeSites(i),Inum) * HAMMAT(CubeSites(i),Inum) 
+                 END DO
+
+                 LiebNorm= 0.0
+                 DO i=1,LSize-n_uc
+                    LiebNorm= LiebNorm + &
+                         HAMMAT(LiebSites(i),Inum) * HAMMAT(LiebSites(i),Inum)
+                 END DO
+
+                 !renormalize
+                 DO i=1,n_uc
+                    HAMMAT(CubeSites(i),Inum) =  HAMMAT(CubeSites(i),Inum) /SQRT(CubeNorm)
+                 END DO
+
+                 DO i=1,LSize-n_uc
+                    HAMMAT(LiebSites(i),Inum) = HAMMAT(LiebSites(i),Inum) /SQRT(LiebNorm)
+                 END DO
+
+              ENDDO
+
+              ! compute normalized participation numbers
+              DO Inum= 1,NEIG
+
+                 CubePart(Inum)= 0.0
+                 DO i=1,n_uc
+                    CubePart(Inum)= CubePart(Inum) + &
+                         HAMMAT(CubeSites(i),Inum) * HAMMAT(CubeSites(i),Inum) * &
+                         HAMMAT(CubeSites(i),Inum) * HAMMAT(CubeSites(i),Inum) 
+                 END DO
+                 CubePart(Inum)=CubePart(Inum) * n_uc/LSize
+
+                 LiebPart(Inum)= 0.0
+                 DO i=1,LSize-n_uc
+                    LiebPart(Inum)= LiebPart(Inum) + &
+                         HAMMAT(LiebSites(i),Inum) * HAMMAT(LiebSites(i),Inum) * &
+                         HAMMAT(LiebSites(i),Inum) * HAMMAT(LiebSites(i),Inum)
+                 END DO
+                 LiebPart(Inum)=LiebPart(Inum) * (LSize-n_uc)/LSize
+
+              ENDDO
+
+              Call WriteOutputEVecProj(Dim, Nx, Inum, NEIG, &
+                   EIGS, LSize, &
+                   CubeProb, CubePart, Lsize, &
+                   LiebProb, LiebPart, LSize, &
+                   IWidth, 0.0, HubDis, & 
+                   RimDis, Seed, str, IErr)
+              
+           END SELECT
 
         END DO ! ISeed cycle
 
      END DO  ! Disorder cycle
 
-     DEALLOCATE ( HAMMAT0, EIGS, WORK, HAMMAT, norm, part_nr )
+     DEALLOCATE ( HAMMAT0, EIGS, WORK, HAMMAT, CubeSites, LiebSites )
 
   END DO ! IWidth cycle
 

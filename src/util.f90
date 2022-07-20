@@ -1,4 +1,4 @@
-SUBROUTINE MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr)
+SUBROUTINE MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr, cubesites, liebsites)
 
   USE MyNumbers
   USE IChannels
@@ -11,14 +11,15 @@ SUBROUTINE MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr)
        nu, & ! the number of site in each edge
        ucl, & ! the number of atoms in a unit cell
        nt, &  ! the whole number of atoms in system
-       n_uc   ! the number of unit cell
+       n_uc   ! the number of unit cells
 
-  INTEGER(KIND=IKIND) i, j, k, ind
+  INTEGER(KIND=IKIND) i, j, k, ind, cubecount,liebcount
 
   LOGICAL(KIND=8) Flag
 
   INTEGER(KIND=IKIND), ALLOCATABLE :: ucl_d(:) 
   REAL(KIND=RKIND) matr(nt, nt)! , matr_W( nt, nt )
+  INTEGER(KIND=IKIND) cubesites(n_uc), liebsites(nt-n_uc)
   
   PRINT*,"MakeLiebMatrixStructure()"
 
@@ -38,13 +39,22 @@ SUBROUTINE MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr)
      STOP
   END IF
     
-!!!!!!! Start construct Lieb Matrix
+  ! ----------------------------------------------------------
+  ! Start construction of Lieb Matrix
+  ! ----------------------------------------------------------
   
+  cubecount=0
+  liebcount=0
+
   DO i=1,n_uc
      ! ----------------------- hub atoms ------------------------!
      ind = (i-1)*ucl + 1
 
      matr(ind,ind) = 0.0D0
+     !print*,"Cube site", ind
+     cubecount= cubecount+1
+     cubesites(cubecount)=ind
+
      ! hopping terms for hub atoms 
      DO j=1,dm
 
@@ -78,6 +88,9 @@ SUBROUTINE MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr)
            DO j=1, dm
 
               ind = (i-1)*ucl + ucl_d(j) + k - 1
+              !print*,"Lieb site", ind
+              liebcount= liebcount+1
+              liebsites(liebcount)=ind
 
               matr(ind,ind) = 0.0D0
               !Hopping term
@@ -109,6 +122,9 @@ SUBROUTINE MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr)
         END IF
 
         ind = (i-1)*ucl + ucl_d(j) + nu - 1
+        !print*,"Lieb site", ind
+        liebcount= liebcount+1
+        liebsites(liebcount)=ind
 
         matr(ind, ind) = 0.0D0 
 
@@ -134,11 +150,7 @@ SUBROUTINE MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr)
 
   RETURN
 
-END SUBROUTINE MAKELIEBMATRIXSTRUCTRUE
-
-
-
-
+END SUBROUTINE MakeLiebMatrixStructrue
 
 !!$SUBROUTINE WriteEvals(dm, nu, n, nt, HubDiagDis, RimDiagDis, W, matr_W, norm, part_nr, ISample, INFO)
 !!$

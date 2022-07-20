@@ -22,8 +22,8 @@ F77FLAGS = -C -g +u -r8 -132 -u              # For debugging
 #F77FLAGS = -O2 -r8 -u -132   # For optimizing
 #F77FLAGS = -xpg -C -r8 -Mprof -u                      # For profiling
 
-F90FLAGS = -C -r8 -132 -u -g -check all -fpe0 -warn -traceback -debug extended                # For debugging
-#F90FLAGS = -w90 -w95 -O2 -r8 -tpp7 -xW -u -132  # For optimizing
+#F90FLAGS = -C -r8 -132 -u -g -check all -fpe0 -warn -traceback -debug extended                # For debugging
+F90FLAGS = -O2 -r8 -u -132  # For optimizing
 #F90FLAGS = -fast -r8 -C -u -132        # For profiling
 
 CC = gcc
@@ -53,7 +53,8 @@ random.o:     random.f90
 
 main_tmp.o:     main.f90
 	sed "s/GITVERSION/`git describe --tags --long`/g" main.f90 | \
-	sed "s/GITBRANCH/`git branch --show-current`/g" >main_tmp.f90
+	sed "s/GITBRANCH/`git branch --show-current`/g" | \
+	sed "s/COMPILED/`date`/g" >main_tmp.f90
 	$(F90) $(F90FLAGS) -c main_tmp.f90 -fpp -Dgit=true
 
 util.o:     util.f90
