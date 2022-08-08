@@ -43,7 +43,8 @@ PROGRAM LiebExactDiag
   REAL(KIND=RKIND), DIMENSION(:), ALLOCATABLE:: EIGS, WORK
   REAL(KIND=RKIND), DIMENSION(:,:), ALLOCATABLE:: HAMMAT
   
-  REAL(KIND=RKIND), DIMENSION(:), ALLOCATABLE:: CubeProb, CubePart, LiebProb, LiebPart, FullPart
+  REAL(KIND=RKIND), DIMENSION(:), ALLOCATABLE:: &
+       CubeProb, CubePart, LiebProb, LiebPart, FullPart
 
   INTRINSIC        INT, MIN
   EXTERNAL         DSYEV
@@ -51,7 +52,7 @@ PROGRAM LiebExactDiag
   ! Parameters for eigenverctor, participation numbers
   
   INTEGER(KIND=IKIND) Seed, i, j, Inum, IErr
-  REAL(KIND=RKIND) drandval, CubeNorm,LiebNorm
+  REAL(KIND=RKIND) drandval,SUMHUBrandval,SUMRIMrandval, CubeNorm,LiebNorm
   REAL(KIND=RKIND),ALLOCATABLE :: norm(:), part_nr(:)
 
   CHARACTER*100 str
@@ -65,7 +66,8 @@ PROGRAM LiebExactDiag
   ! set: git tag -a v0.0 -m 'Version 0.0'; git push --tags
   ! ----------------------------------------------------------
 #ifdef git
-  PRINT*,"LiebExactDiag ", TRIM("GITVERSION"), ", ", TRIM("GITBRANCH"), ", compiled: ", TRIM("COMPILED")
+  PRINT*,"LiebExactDiag ", TRIM("GITVERSION"), ", ", &
+       TRIM("GITBRANCH"), ", compiled: ", TRIM("COMPILED")
 #else
   PRINT*,"LiebExactDiag()"
 #endif
@@ -215,21 +217,31 @@ PROGRAM LiebExactDiag
            !part_nr(:) = 0d0
 
            HAMMAT(:,:) = HAMMAT0(:,:)
-
+           SUMHUBrandval= 0.0D0; SUMRIMrandval= 0.0D0
+           
            ! Give the Lieb matrix different onsite potensial
            DO i=1, n_uc
 
               drandval= DRANDOM5(ISSeed)
+              SUMHUBrandval=SUMHUBrandval + HubDis*(drandval - 0.5D0)
               HAMMAT( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = HubDis*(drandval - 0.5D0)
 
               DO j=1, ucl-1
 
                  drandval= DRANDOM5(ISSeed)
+                 SUMRIMrandval=SUMRIMrandval + RimDis*(drandval - 0.5D0)
                  HAMMAT((i-1)*ucl + j + 1 , (i-1)*ucl + j + 1) = RimDis*(drandval - 0.5D0)
 
               END DO
 
            END DO
+
+           ! ----------------------------------------------------------
+           ! WRITE SUMrandval to allow identification of accidental states
+           ! ----------------------------------------------------------
+
+           PRINT*,"main(): Seed=", Seed, ", SHrv=", SUMHUBrandval/n_uc, &
+                ", SRrv=", SUMRIMrandval/n_uc
 
            ! ----------------------------------------------------------
            ! START the diagonalizstion process
