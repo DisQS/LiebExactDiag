@@ -83,31 +83,30 @@ SUBROUTINE Input(IErr)
   ILine= ILine+1
   READ(IChInp,10,ERR=20) dWidth
   !PRINT*,"dWidth       = ", dWidth
-  
-  ILine= ILine+1
-  READ(IChInp,15,ERR=20) HubDis0
-  !PRINT*,"HubDis0     = ", HubDis0
-  
-  ILine= ILine+1
-  READ(IChInp,15,ERR=20) HubDis1
-  !PRINT*,"HubDis1     = ", HubDis1
-  
-  ILine= ILine+1
-  READ(IChInp,15,ERR=20) dHubDis
-  !PRINT*,"dHubDis     = ", dHubDis
-
-  ILine= ILine+1
-  READ(IChInp,15,ERR=20) RimDis
-  !PRINT*,"RimDis      = ", RimDis
 
   ILine= ILine+1
   READ(IChInp,15,ERR=20) CubeConstPoten
   !PRINT*,"CubeConstPoten  = ", CubeConstPoten
 
   ILine= ILine+1
+  READ(IChInp,15,ERR=20) CubeDis0
+  !PRINT*,"CubeDis0     = ", CubeDis0
+  
+  ILine= ILine+1
+  READ(IChInp,15,ERR=20) CubeDis1
+  !PRINT*,"CubeDis1     = ", CubeDis1
+  
+  ILine= ILine+1
+  READ(IChInp,15,ERR=20) dCubeDis
+  !PRINT*,"dCubeDis     = ", dCubeDis
+
+  ILine= ILine+1
   READ(IChInp,15,ERR=20) LiebConstPoten
   !PRINT*,"LiebConstPoten  = ", LiebConstPoten
 
+  ILine= ILine+1
+  READ(IChInp,15,ERR=20) LiebDis
+  !PRINT*,"LiebDis      = ", LiebDis
   
 10 FORMAT(16X,I15.1)
   ! 10	FORMAT("IMAXIteration= ",I15.1)
@@ -117,25 +116,24 @@ SUBROUTINE Input(IErr)
   ! check the parameters for validity
   
   IF(IWriteFlag.GE.2) THEN
-     PRINT*,"ISeed        = ", ISeed
-     PRINT*,"NSeed        = ", NSeed
-     PRINT*,"Dim          = ", Dim
-     PRINT*,"Nx           = ", Nx
-     PRINT*,"IBCFlag      = ", IBCFlag
-     PRINT*,"IRNGFlag     = ", IRNGFlag
-     PRINT*,"IKeepFlag    = ", IKeepFlag
-     PRINT*,"IWriteFlag   = ", IWriteFlag
-     PRINT*,"IStateFlag   = ", IStateFlag
-     PRINT*,"Width0       = ", Width0
-     PRINT*,"Width1       = ", Width1
-     PRINT*,"dWidth       = ", dWidth
-     PRINT*,"HubDis0     = ",  HubDis0
-     PRINT*,"HubDis1     = ",  HubDis1
-     PRINT*,"dHubDis     = ",  dHubDis
-     PRINT*,"RimDis   = ",     RimDis
+     PRINT*,"ISeed         = ", ISeed
+     PRINT*,"NSeed         = ", NSeed
+     PRINT*,"Dim           = ", Dim
+     PRINT*,"Nx            = ", Nx
+     PRINT*,"IBCFlag       = ", IBCFlag
+     PRINT*,"IRNGFlag      = ", IRNGFlag
+     PRINT*,"IKeepFlag     = ", IKeepFlag
+     PRINT*,"IWriteFlag    = ", IWriteFlag
+     PRINT*,"IStateFlag    = ", IStateFlag
+     PRINT*,"Width0        = ", Width0
+     PRINT*,"Width1        = ", Width1
+     PRINT*,"dWidth        = ", dWidth
      PRINT*,"CubeConstPoten= ", CubeConstPoten
+     PRINT*,"CubeDis0      = ", CubeDis0
+     PRINT*,"CubeDis1      = ", CubeDis1
+     PRINT*,"dCubeDis      = ", dCubeDis
      PRINT*,"LiebConstPoten= ", LiebConstPoten
-     
+     PRINT*,"LiebDis       = ", LiebDis     
   ENDIF
 
   CLOSE(IChInp)
@@ -197,7 +195,7 @@ END FUNCTION GetFileName
 !
 ! IErr	error code
 
-SUBROUTINE CheckOutput( Dim, Nx, IWidth, Energy, HubDis, RimDis, CubeConstPoten, LiebConstPoten, PreSeed, str, IErr )
+SUBROUTINE CheckOutput( Dim, Nx, IWidth, CubeDis, LiebDis, CubeConstPoten, LiebConstPoten, PreSeed, str, IErr )
 
   USE MyNumbers 
   USE IChannels
@@ -206,37 +204,40 @@ SUBROUTINE CheckOutput( Dim, Nx, IWidth, Energy, HubDis, RimDis, CubeConstPoten,
 
   
   INTEGER(KIND=IKIND) Dim, Nx, IWidth, IErr, PreSeed, ISSeed
-  REAL(KIND=RKIND) HubDis, RimDis, Energy, CubeConstPoten, LiebConstPoten
+  REAL(KIND=RKIND) CubeDis, LiebDis, CubeConstPoten, LiebConstPoten
   
   CHARACTER*100 FileName, str
+  CHARACTER*1 SymbolCP,symbolLP
+
+  IF(CubeConstPoten.GE.0.0D0) Then
+     SymbolCP="+"
+  Else
+     SymbolCP="-"
+  End If
+
+  If(LiebConstPoten.GE.0.0D0) Then
+     SymbolLP="+"
+  Else
+     SymbolLP="-"
+  End If
+  
   
   PRINT*,"DBG: CheckOutput()"
-  
+
   IErr= 0
   
   !   WRITE out the input parameter
-  IF(Energy.GE.0.0D0) THEN
-     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A6,I6.6,A6,I6.6,A2,I5.5,A4)') &
-          "Eval-", "L", Dim, Nx, &
-          "-M",IWidth, &
-          "-Espec", &! NINT(100.*ABS(Energy)), &
-          "-hD", NINT(100.*ABS(HubDis)), &
-          "-rD", NINT(100.*ABS(RimDis)), &
-          "-CubeP", NINT(100.*ABS(CubeConstPoten)), &
-          "-LiebP", NINT(100.*ABS(LiebConstPoten)), "-c",& 
-          PreSeed, ".raw" !"_s", ISSeed, 
-  ELSE
-     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A6,I6.6,A6,I6.6,A2,I5.5,A4)') &
-          "Eval-","L",Dim, Nx, &
-          "-M",IWidth, &
-          "-Espec", & !NINT(100.*ABS(Energy)), &
-          "-hD",NINT(100.*ABS(HubDis)), &
-          "-rD", NINT(100.*ABS(RimDis)), &
-          "-CubeP", NINT(100.*ABS(CubeConstPoten)), &
-          "-LiebP", NINT(100.*ABS(LiebConstPoten)), "-c",& 
-          PreSeed, ".raw" !"_s", ISSeed, 
-  ENDIF
-  
+  WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A6,A1,I6.6,A3,I6.6,A6,A1,I6.6,A3,I6.6,A2,I5.5,A4)') &
+       "Eval_", "L", Dim, Nx, &
+       "_M",IWidth, &
+       "_Espec", &! NINT(100.*ABS(Energy)), &
+       "_CubeP",SymbolCP,NINT(100.*ABS(CubeConstPoten)), &
+       "_CD", NINT(100.*ABS(CubeDis)), &
+       "_LiebP", SymbolLP,NINT(100.*ABS(LiebConstPoten)), &
+       "_LD", NINT(100.*ABS(LiebDis)), "-c",& 
+       PreSeed, ".raw" !"_s", ISSeed, 
+
+     
   OPEN(UNIT= IChOut, ERR= 10, STATUS= 'NEW', FILE= TRIM(ADJUSTL(str))//"/"//FileName)
   !PRINT*, "CheckOutput(): ", TRIM(FileName), "DOES NOT exist -- proceeding!"
   WRITE(*,'(A16,A54,A31)') "CheckOutput(): ", &
@@ -269,8 +270,8 @@ END SUBROUTINE CheckOutput
 !
 ! IErr	error code
 
-SUBROUTINE WriteOutputEVal(Dim, Nx, NEVals, EIGS, IWidth, Energy, &
-     HubDis, RimDis, CubeConstPoten, LiebConstPoten, PreSeed, str, IErr)
+SUBROUTINE WriteOutputEVal(Dim, Nx, NEVals, EIGS, IWidth, &
+     CubeDis, LiebDis, CubeConstPoten, LiebConstPoten, PreSeed, str, IErr)
 
   USE MyNumbers
   USE IChannels
@@ -279,37 +280,50 @@ SUBROUTINE WriteOutputEVal(Dim, Nx, NEVals, EIGS, IWidth, Energy, &
 
   INTEGER(KIND=IKIND) Dim, Nx
   INTEGER(KIND=IKIND) IWidth, IErr, NEVals, PreSeed, ISSeed, i
-  REAL(KIND=RKIND) HubDis, RimDis, Energy, CubeConstPoten, LiebConstPoten
+  REAL(KIND=RKIND) CubeDis, LiebDis, CubeConstPoten, LiebConstPoten
   REAL(KIND=RKIND) EIGS(NEVals)
   
   CHARACTER*100 FileName, str
+  CHARACTER*1 SymbolCP,symbolLP
 
+  IF(CubeConstPoten.GE.0.0D0) Then
+     SymbolCP="+"
+  Else
+     SymbolCP="-"
+  End If
+
+  If(LiebConstPoten.GE.0.0D0) Then
+     SymbolLP="+"
+  Else
+     SymbolLP="-"
+  End If
+
+  
   PRINT*,"DBG: WriteOutputEVal()"
   
   IErr= 0
   
   !   WRITE out the input parameter
-  IF(Energy.GE.0.0D0) THEN
-     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A6,I6.6,A6,I6.6,A2,I5.5,A4)') &
-          "Eval-", "L", Dim, Nx, &
-          "-M",IWidth, &
-          "-Espec", & !NINT(100.*ABS(Energy)), &
-          "-hD", NINT(100.*ABS(HubDis)), &
-          "-rD", NINT(100.*ABS(RimDis)), &
-          "-CubeP", NINT(100.*ABS(CubeConstPoten)), &
-          "-LiebP", NINT(100.*ABS(LiebConstPoten)), "-c",& 
-          PreSeed, ".raw" !"_s", ISSeed, 
-  ELSE
-     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A6,I6.6,A6,I6.6,A2,I5.5,A4)') &
-          "Eval-","L",Dim, Nx, &
-          "-M",IWidth, &
-          "-Espec", & !NINT(100.*ABS(Energy)), &
-          "-hD",NINT(100.*ABS(HubDis)), &
-          "-rD", NINT(100.*ABS(RimDis)), &
-          "-CubeP", NINT(100.*ABS(CubeConstPoten)), &
-          "-LiebP", NINT(100.*ABS(LiebConstPoten)), "-c",&
-          PreSeed, ".raw" !"_s", ISSeed, 
-  ENDIF
+  WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A6,A1,I6.6,A3,I6.6,A6,A1,I6.6,A3,I6.6,A2,I5.5,A4)') &
+       "Eval_", "L", Dim, Nx, &
+       "_M",IWidth, &
+       "_Espec", &! NINT(100.*ABS(Energy)), &
+       "_CubeP",SymbolCP,NINT(100.*ABS(CubeConstPoten)), &
+       "_CD", NINT(100.*ABS(CubeDis)), &
+       "_LiebP", SymbolLP,NINT(100.*ABS(LiebConstPoten)), &
+       "_LD", NINT(100.*ABS(LiebDis)), "-c",& 
+       PreSeed, ".raw" !"_s", ISSeed, 
+
+  
+!!$  WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A6,I6.6,A6,I6.6,A2,I5.5,A4)') &
+!!$       "Eval-", "L", Dim, Nx, &
+!!$       "-M",IWidth, &
+!!$       "-Espec", & !NINT(100.*ABS(Energy)), &
+!!$       "-hD", NINT(100.*ABS(CubeDis)), &
+!!$       "-rD", NINT(100.*ABS(LiebDis)), &
+!!$       "-CubeP", NINT(100.*ABS(CubeConstPoten)), &
+!!$       "-LiebP", NINT(100.*ABS(LiebConstPoten)), "-c",& 
+!!$       PreSeed, ".raw" !"_s", ISSeed, 
   
 !  IF(IWriteFlag.GE.2) THEN
      PRINT*, "WriteOutputEVal(): ", FileName
@@ -355,7 +369,7 @@ END SUBROUTINE WriteOutputEVal
 ! IErr	error code
 
 SUBROUTINE WriteOutputEVec( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
-     IWidth, Energy, HubDis, RimDis, CubeConstPoten, LiebConstPoten, &
+     IWidth, CubeDis, LiebDis, CubeConstPoten, LiebConstPoten, &
      PreSeed, str, IErr)
 
   USE MyNumbers
@@ -365,42 +379,67 @@ SUBROUTINE WriteOutputEVec( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
 
   INTEGER(KIND=IKIND) Dim, Nx
   INTEGER(KIND=IKIND) Inum, PreSeed, ISSeed, IWidth, IErr, Lsize, VECS_size, NEVals, i
-  REAL(KIND=RKIND) HubDis, RimDis, Energy, CubeConstPoten, LiebConstPoten
+  REAL(KIND=RKIND) CubeDis, LiebDis, CubeConstPoten, LiebConstPoten
 
   REAL(KIND=RKIND) VECS(VECS_size,VECS_size)
 
   CHARACTER*100 FileName, str
+  CHARACTER*1 SymbolCP,symbolLP
 
+  IF(CubeConstPoten.GE.0.0D0) Then
+     SymbolCP="+"
+  Else
+     SymbolCP="-"
+  End If
+
+  If(LiebConstPoten.GE.0.0D0) Then
+     SymbolLP="+"
+  Else
+     SymbolLP="-"
+  End If
+
+
+  
   PRINT*,"DBG: WriteOutputEvec()"
 
   IErr= 0
 
   !   WRITE out the input parameter
-  IF(Energy.GE.0.0D0) THEN
-     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A6,I6.6,A6,I6.6,A2,I5.5,A2,I4.4,A4)') &
-     !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
-          "Evec-","L", Dim, Nx, &
-          "-M", IWidth, &
-          "-Espec", & !NINT(100.0D0*ABS(Energy)), &
-          "-hD", NINT(100.0D0*ABS(HubDis)), &
-          "-rD", NINT(100.0D0*ABS(RimDis)), &
-          "-CubeP", NINT(100.*ABS(CubeConstPoten)), &
-          "-LiebP", NINT(100.*ABS(LiebConstPoten)), &
-          "-c", PreSeed, "-N", Inum, & !"_s", ISSeed, 
-          ".raw"
-  ELSE
-     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A6,I6.6,A6,I6.6,A2,I5.5,A2,I4.4,A4)') &
-     !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
-          "Evec-","L",Dim, Nx, &
-          "-M", IWidth, &
-          "-Espec", & !NINT(100.0D0*ABS(Energy)), &
-          "-dD", NINT(100.0D0*ABS(HubDis)), &
-          "-rD", NINT(100.0D0*ABS(RimDis)), &
-          "-CubeP", NINT(100.*ABS(CubeConstPoten)), &
-          "-LiebP", NINT(100.*ABS(LiebConstPoten)), &
-          "-c", PreSeed, "-N", Inum, & !"_s", ISSeed, 
-          ".raw"
-  ENDIF
+  WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A6,A1,I6.6,A3,I6.6,A6,A1,I6.6,A3,I6.6,A2,I5.5,A4)') &
+       "Eval_", "L", Dim, Nx, &
+       "_M",IWidth, &
+       "_Espec", &! NINT(100.*ABS(Energy)), &
+       "_CubeP",SymbolCP,NINT(100.*ABS(CubeConstPoten)), &
+       "_CD", NINT(100.*ABS(CubeDis)), &
+       "_LiebP", SymbolLP,NINT(100.*ABS(LiebConstPoten)), &
+       "_LD", NINT(100.*ABS(LiebDis)), "-c",& 
+       PreSeed, ".raw" !"_s", ISSeed, 
+
+!!$  IF(Energy.GE.0.0D0) THEN
+!!$     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A6,I6.6,A6,I6.6,A2,I5.5,A2,I4.4,A4)') &
+!!$     !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
+!!$          "Evec-","L", Dim, Nx, &
+!!$          "-M", IWidth, &
+!!$          "-Espec", & !NINT(100.0D0*ABS(Energy)), &
+!!$          "-hD", NINT(100.0D0*ABS(CubeDis)), &
+!!$          "-rD", NINT(100.0D0*ABS(LiebDis)), &
+!!$          "-CubeP", NINT(100.*ABS(CubeConstPoten)), &
+!!$          "-LiebP", NINT(100.*ABS(LiebConstPoten)), &
+!!$          "-c", PreSeed, "-N", Inum, & !"_s", ISSeed, 
+!!$          ".raw"
+!!$  ELSE
+!!$     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A6,I6.6,A6,I6.6,A2,I5.5,A2,I4.4,A4)') &
+!!$     !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
+!!$          "Evec-","L",Dim, Nx, &
+!!$          "-M", IWidth, &
+!!$          "-Espec", & !NINT(100.0D0*ABS(Energy)), &
+!!$          "-dD", NINT(100.0D0*ABS(CubeDis)), &
+!!$          "-rD", NINT(100.0D0*ABS(LiebDis)), &
+!!$          "-CubeP", NINT(100.*ABS(CubeConstPoten)), &
+!!$          "-LiebP", NINT(100.*ABS(LiebConstPoten)), &
+!!$          "-c", PreSeed, "-N", Inum, & !"_s", ISSeed, 
+!!$          ".raw"
+!!$  ENDIF
 
   PRINT*, "WriteOutputEVec(): ", FileName
 
@@ -440,7 +479,7 @@ END SUBROUTINE WriteOutputEVec
 ! IErr	error code
 
 SUBROUTINE WriteOutputEVecBULK( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
-     IWidth, Energy, HubDis, RimDis, CubeConstPoten, LiebConstPoten, &
+     IWidth, CubeDis, LiebDis, CubeConstPoten, LiebConstPoten, &
      PreSeed, str, IErr)
 
   USE MyNumbers
@@ -450,42 +489,66 @@ SUBROUTINE WriteOutputEVecBULK( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
 
   INTEGER(KIND=IKIND) Dim, Nx
   INTEGER(KIND=IKIND) Inum, PreSeed, ISSeed, IWidth, IErr, Lsize, VECS_size, NEVals, i,j
-  REAL(KIND=RKIND) HubDis, RimDis, Energy, CubeConstPoten, LiebConstPoten
+  REAL(KIND=RKIND) CubeDis, LiebDis, CubeConstPoten, LiebConstPoten
 
   REAL(KIND=RKIND) VECS(VECS_size,VECS_size)
 
   CHARACTER*100 FileName, str
+  CHARACTER*1 SymbolCP,symbolLP
+
+  IF(CubeConstPoten.GE.0.0D0) Then
+     SymbolCP="+"
+  Else
+     SymbolCP="-"
+  End If
+
+  If(LiebConstPoten.GE.0.0D0) Then
+     SymbolLP="+"
+  Else
+     SymbolLP="-"
+  End If
+
 
   PRINT*,"DBG: WriteOutputEvecBULK()"
 
   IErr= 0
 
   !   WRITE out the input parameter
-  IF(Energy.GE.0.0D0) THEN
-     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A6,I6.6,A6,I6.6,A2,I5.5,A4)') &
-     !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
-          "Evec-","L", Dim, Nx, &
-          "-M", IWidth, &
-          "-Espec", & !NINT(100.0D0*ABS(Energy)), &
-          "-hD", NINT(100.0D0*ABS(HubDis)), &
-          "-rD", NINT(100.0D0*ABS(RimDis)), &
-          "-CubeP", NINT(100.*ABS(CubeConstPoten)), &
-          "-LiebP", NINT(100.*ABS(LiebConstPoten)), &
-          "-c", PreSeed, &! "-N", Inum, & !"_s", ISSeed, 
-          ".raw"
-  ELSE
-     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A6,I6.6,A6,I6.6,A2,I5.5,A4)') &
-     !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
-          "Evec-","L",Dim, Nx, &
-          "-M", IWidth, &
-          "-Espec", & !NINT(100.0D0*ABS(Energy)), &
-          "-dD", NINT(100.0D0*ABS(HubDis)), &
-          "-rD", NINT(100.0D0*ABS(RimDis)), &
-          "-CubeP", NINT(100.*ABS(CubeConstPoten)), &
-          "-LiebP", NINT(100.*ABS(LiebConstPoten)), &
-          "-c", PreSeed, &! "-N", Inum, & !"_s", ISSeed, 
-          ".raw"
-  ENDIF
+  WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A6,A1,I6.6,A3,I6.6,A6,A1,I6.6,A3,I6.6,A2,I5.5,A4)') &
+       "Eval_", "L", Dim, Nx, &
+       "_M",IWidth, &
+       "_Espec", &! NINT(100.*ABS(Energy)), &
+       "_CubeP",SymbolCP,NINT(100.*ABS(CubeConstPoten)), &
+       "_CD", NINT(100.*ABS(CubeDis)), &
+       "_LiebP", SymbolLP,NINT(100.*ABS(LiebConstPoten)), &
+       "_LD", NINT(100.*ABS(LiebDis)), "-c",& 
+       PreSeed, ".raw" !"_s", ISSeed,
+  
+!!$  IF(Energy.GE.0.0D0) THEN
+!!$     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A6,I6.6,A6,I6.6,A2,I5.5,A4)') &
+!!$     !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
+!!$          "Evec-","L", Dim, Nx, &
+!!$          "-M", IWidth, &
+!!$          "-Espec", & !NINT(100.0D0*ABS(Energy)), &
+!!$          "-hD", NINT(100.0D0*ABS(CubeDis)), &
+!!$          "-rD", NINT(100.0D0*ABS(LiebDis)), &
+!!$          "-CubeP", NINT(100.*ABS(CubeConstPoten)), &
+!!$          "-LiebP", NINT(100.*ABS(LiebConstPoten)), &
+!!$          "-c", PreSeed, &! "-N", Inum, & !"_s", ISSeed, 
+!!$          ".raw"
+!!$  ELSE
+!!$     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A6,I6.6,A6,I6.6,A2,I5.5,A4)') &
+!!$     !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
+!!$          "Evec-","L",Dim, Nx, &
+!!$          "-M", IWidth, &
+!!$          "-Espec", & !NINT(100.0D0*ABS(Energy)), &
+!!$          "-dD", NINT(100.0D0*ABS(CubeDis)), &
+!!$          "-rD", NINT(100.0D0*ABS(LiebDis)), &
+!!$          "-CubeP", NINT(100.*ABS(CubeConstPoten)), &
+!!$          "-LiebP", NINT(100.*ABS(LiebConstPoten)), &
+!!$          "-c", PreSeed, &! "-N", Inum, & !"_s", ISSeed, 
+!!$          ".raw"
+!!$  ENDIF
 
   PRINT*, "WriteOutputEVecBULK(): ", FileName
 
@@ -531,7 +594,7 @@ SUBROUTINE WriteOutputEVecProj( Dim, Nx, Inum, NEVals, &
      CubeProb, CubePart, Cube_size, &
      LiebProb, LiebPart, Lieb_size, &
      FullPart, Full_size, &
-     IWidth, Energy, HubDis, RimDis, &
+     IWidth, CubeDis, LiebDis, &
      CubeConstPoten, LiebConstPoten, &
      PreSeed, str, IErr)
 
@@ -544,7 +607,7 @@ SUBROUTINE WriteOutputEVecProj( Dim, Nx, Inum, NEVals, &
 
   INTEGER(KIND=IKIND) Dim, Nx, Inum, PreSeed, ISSeed, IWidth, IErr
   INTEGER(KIND=IKIND) Lsize, Cube_size,Lieb_size,Full_size, NEVals, i,j
-  REAL(KIND=RKIND) HubDis, RimDis, Energy, CubeConstPoten, LiebConstPoten
+  REAL(KIND=RKIND) CubeDis, LiebDis, CubeConstPoten, LiebConstPoten
 
   REAL(KIND=RKIND) EIGS(LSize), &
        CubeProb(Cube_size), CubePart(Cube_size), &
@@ -552,37 +615,64 @@ SUBROUTINE WriteOutputEVecProj( Dim, Nx, Inum, NEVals, &
        FullPart(Full_size)
 
   CHARACTER*100 FileName, str
+  CHARACTER*1 SymbolCP,symbolLP
+
+  IF(CubeConstPoten.GE.0.0D0) Then
+     SymbolCP="+"
+  Else
+     SymbolCP="-"
+  End If
+
+  If(LiebConstPoten.GE.0.0D0) Then
+     SymbolLP="+"
+  Else
+     SymbolLP="-"
+  End If
+
 
   PRINT*,"DBG: WriteOutputEvecProj()"
 
   IErr= 0
 
+
+  
+
   !   WRITE out the input parameter
-  IF(Energy.GE.0.0D0) THEN
-     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A6,I6.6,A6,I6.6,A2,I5.5,A4)') &
-     !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
-          "Evec-","L", Dim, Nx, &
-          "-M", IWidth, &
-          "-Eproj", & !NINT(100.0D0*ABS(Energy)), &
-          "-hD", NINT(100.0D0*ABS(HubDis)), &
-          "-rD", NINT(100.0D0*ABS(RimDis)), &
-          "-CubeP", NINT(100.*ABS(CubeConstPoten)), &
-          "-LiebP", NINT(100.*ABS(LiebConstPoten)), &
-          "-c", PreSeed, &! "-N", Inum, & !"_s", ISSeed, 
-          ".raw"
-  ELSE
-     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A6,I6.6,A6,I6.6,A2,I5.5,A4)') &
-     !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
-          "Evec-","L",Dim, Nx, &
-          "-M", IWidth, &
-          "-Eproj", & !NINT(100.0D0*ABS(Energy)), &
-          "-dD", NINT(100.0D0*ABS(HubDis)), &
-          "-rD", NINT(100.0D0*ABS(RimDis)), &
-           "-CubeP", NINT(100.*ABS(CubeConstPoten)), &
-          "-LiebP", NINT(100.*ABS(LiebConstPoten)), &
-          "-c", PreSeed, &! "-N", Inum, & !"_s", ISSeed, 
-          ".raw"
-  ENDIF
+  WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A6,A1,I6.6,A3,I6.6,A6,A1,I6.6,A3,I6.6,A2,I5.5,A4)') &
+       "Evec_", "L", Dim, Nx, &
+       "_M",IWidth, &
+       "_Eproj", &! NINT(100.*ABS(Energy)), &
+       "_CubeP",SymbolCP,NINT(100.*ABS(CubeConstPoten)), &
+       "_CD", NINT(100.*ABS(CubeDis)), &
+       "_LiebP", SymbolLP,NINT(100.*ABS(LiebConstPoten)), &
+       "_LD", NINT(100.*ABS(LiebDis)), "-c",& 
+       PreSeed, ".raw" !"_s", ISSeed,
+    
+!!$  IF(Energy.GE.0.0D0) THEN
+!!$     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A6,I6.6,A6,I6.6,A2,I5.5,A4)') &
+!!$     !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
+!!$          "Evec-","L", Dim, Nx, &
+!!$          "-M", IWidth, &
+!!$          "-Eproj", & !NINT(100.0D0*ABS(Energy)), &
+!!$          "-hD", NINT(100.0D0*ABS(CubeDis)), &
+!!$          "-rD", NINT(100.0D0*ABS(LiebDis)), &
+!!$          "-CubeP", NINT(100.*ABS(CubeConstPoten)), &
+!!$          "-LiebP", NINT(100.*ABS(LiebConstPoten)), &
+!!$          "-c", PreSeed, &! "-N", Inum, & !"_s", ISSeed, 
+!!$          ".raw"
+!!$  ELSE
+!!$     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A6,I6.6,A6,I6.6,A2,I5.5,A4)') &
+!!$     !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
+!!$          "Evec-","L",Dim, Nx, &
+!!$          "-M", IWidth, &
+!!$          "-Eproj", & !NINT(100.0D0*ABS(Energy)), &
+!!$          "-dD", NINT(100.0D0*ABS(CubeDis)), &
+!!$          "-rD", NINT(100.0D0*ABS(LiebDis)), &
+!!$           "-CubeP", NINT(100.*ABS(CubeConstPoten)), &
+!!$          "-LiebP", NINT(100.*ABS(LiebConstPoten)), &
+!!$          "-c", PreSeed, &! "-N", Inum, & !"_s", ISSeed, 
+!!$          ".raw"
+!!$  ENDIF
 
   PRINT*, "WriteOutputEVecProj(): ", FileName
 
@@ -624,41 +714,50 @@ END SUBROUTINE WriteOutputEVecProj
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Create Folder !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-SUBROUTINE GetDirec(Dim, Nx, Width, HubDis, RimDis, CubeConstPoten, LiebConstPoten, Energy, str)
+SUBROUTINE GetDirec(Dim, Nx, Width, CubeDis, LiebDis, CubeConstPoten, LiebConstPoten, str)
   USE MyNumbers
 
   INTEGER*4 Dim, Nx, Width, Seed
-  REAL*8 HubDis, RimDis, Energy, CubeConstPoten, LiebConstPoten
+  REAL*8 CubeDis, LiebDis, CubeConstPoten, LiebConstPoten
   CHARACTER(len=100) str
   CHARACTER(len=10) fid1, fid2, fid3, fid4, fid5, fid6, fid7
   LOGICAL*4 ierr1
+  CHARACTER*1 SymbolCP,symbolLP
 
-  PRINT*, "GetDirec(): ", Dim, Nx, Width, HubDis, RimDis, Energy
+  IF(CubeConstPoten.GE.0.0D0) Then
+     SymbolCP="+"
+  Else
+     SymbolCP="-"
+  End If
+
+  If(LiebConstPoten.GE.0.0D0) Then
+     SymbolLP="+"
+  Else
+     SymbolLP="-"
+  End If
+
+  PRINT*, "GetDirec(): ", Dim, Nx, Width, CubeDis, LiebDis
 
   WRITE(fid1,'(I1)') Dim; fid1=TRIM(ADJUSTL(fid1))
   WRITE(fid2,'(I1)') Nx; fid2=TRIM(ADJUSTL(fid2))
   WRITE(fid3,'(I3)') Width; fid3=TRIM(ADJUSTL(fid3))
-  WRITE(fid4,'(I6.6)') NINT(HubDis*100.); fid4=TRIM(ADJUSTL(fid4))
-  WRITE(fid5,'(I6.6)') NINT(RimDis*100.); fid5=TRIM(ADJUSTL(fid5))
-  WRITE(fid6,'(I6.6)') NINT(CubeConstPoten*100.); fid6=TRIM(ADJUSTL(fid6))
-  WRITE(fid7,'(I6.6)') NINT(LiebConstPoten*100.); fid7=TRIM(ADJUSTL(fid7))
+  WRITE(fid4,'(I6.6)') NINT(CubeDis*100.); fid4=TRIM(ADJUSTL(fid4))
+  WRITE(fid5,'(I6.6)') NINT(LiebDis*100.); fid5=TRIM(ADJUSTL(fid5))
+  WRITE(fid6,'(I6.6)') NINT(ABS(CubeConstPoten)*100.); fid6=TRIM(ADJUSTL(fid6))
+  WRITE(fid7,'(I6.6)') NINT(ABS(LiebConstPoten)*100.); fid7=TRIM(ADJUSTL(fid7))
   !WRITE(fid6,'(I4.4)') Seed
   !WRITE(fid6,'(I6.6)') NINT(ABS(Energy)*100.); fid6=TRIM(ADJUSTL(fid6))
+
+ str='L'//TRIM(fid1)//TRIM(fid2)//'_M'//TRIM(fid3)//'_CubeP'//TRIM(SymbolCP)//TRIM(fid6)//'_CD'//TRIM(fid4) &
+          //'_LiebP'//TRIM(SymbolLP)//TRIM(fid7)//'_LD'//TRIM(fid5)!//"_E"//TRIM(fid6)!//'_DATA'
   
-  IF(Energy.GE.ZERO) THEN
-     str='L'//TRIM(fid1)//TRIM(fid2)//'_M'//TRIM(fid3)//'_hD'//TRIM(fid4) &
-          //'_rD'//TRIM(fid5)//'_CubeP'//TRIM(fid6)//'_LiebP'//TRIM(fid7)!//"_E"//TRIM(fid6)!//'_DATA'
-  ELSE
-     str='L'//TRIM(fid1)//TRIM(fid2)//'_M'//TRIM(fid3)//'_hD'//TRIM(fid4) &
-          //'_rD'//TRIM(fid5)//'_CubeP'//TRIM(fid6)//'_LiebP'//TRIM(fid7)!//"_E-"//TRIM(fid6)!//'_DATA'
-  END IF
 
 !  Write(str,'(A1,I1,I1,A2,I3.1,A7,f6.1,A7,f6.1,A6)') &
-!       "L", Dim, Nx, "_M", Width, "_HubDis", HubDis, &
-!       "_RimDis", RimDis, "_.DATA"
+!       "L", Dim, Nx, "_M", Width, "_CubeDis", CubeDis, &
+!       "_LiebDis", LiebDis, "_.DATA"
 
 !!$  PRINT*,str
-  PRINT*, "GetDirec(): checking for ", str, Dim, Nx, Width, HubDis, RimDis, CubeConstPoten, LiebConstPoten, Energy
+  PRINT*, "GetDirec(): checking for ", str, Dim, Nx, Width, CubeDis, LiebDis, CubeConstPoten, LiebConstPoten
 
 #ifdef ifort
   INQUIRE(directory=TRIM(ADJUSTL(str)), Exist=ierr1) ! ifort
