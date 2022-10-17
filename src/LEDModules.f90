@@ -97,7 +97,7 @@ MODULE DPara
   REAL(KIND=RKIND) :: CubeDis0,CubeDis1,dCubeDis
   REAL(KIND=RKIND) :: CubeDis
   REAL(KIND=RKIND) :: LiebDis
-  REAL(KIND=RKIND) :: CubeConstPoten, LiebConstPoten
+  REAL(KIND=RKIND) :: CubeConPot, LiebConPot
   REAL(KIND=RKIND) :: Kappa, MagFlux
   REAL(KIND=RKIND) :: MyEpsilon
 
