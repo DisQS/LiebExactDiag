@@ -94,9 +94,10 @@ END MODULE IPara
 !!--------------------------------------------------------------------
 MODULE DPara
   USE MyNumbers
-  REAL(KIND=RKIND) :: HubDis0,HubDis1,dHubDis
-  REAL(KIND=RKIND) :: HubDis
-  REAL(KIND=RKIND) :: RimDis
+  REAL(KIND=RKIND) :: CubeDis0,CubeDis1,dCubeDis
+  REAL(KIND=RKIND) :: CubeDis
+  REAL(KIND=RKIND) :: LiebDis
+  REAL(KIND=RKIND) :: CubeConPot, LiebConPot
   REAL(KIND=RKIND) :: Kappa, MagFlux
   REAL(KIND=RKIND) :: MyEpsilon
 

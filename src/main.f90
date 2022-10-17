@@ -114,12 +114,12 @@ PROGRAM LiebExactDiag
      ! ALLOCATing memory
      ! ----------------------------------------------------------
      
-     ALLOCATE ( HAMMAT0(LSize, LSize) )
-     ALLOCATE ( EIGS( LSize ) )
-     ALLOCATE ( WORK( LWMAX ) )
-     ALLOCATE ( HAMMAT( LSize, LSize ) )
-     ALLOCATE ( CubeSites( n_uc ) )
-     ALLOCATE ( LiebSites( LSize - n_uc ) )
+     ALLOCATE( HAMMAT0(LSize, LSize) )
+     ALLOCATE( EIGS( LSize ) )
+     ALLOCATE( WORK( LWMAX ) )
+     ALLOCATE( HAMMAT( LSize, LSize ) )
+     ALLOCATE( CubeSites( n_uc ) )
+     ALLOCATE( LiebSites( LSize - n_uc ) )
      ALLOCATE( CubeProb( LSize ) )
      ALLOCATE( LiebProb( LSize ) )
      ALLOCATE( CubePart( LSize ) )
@@ -132,7 +132,7 @@ PROGRAM LiebExactDiag
 
      ! ----------------------------------------------------------
      IF(IWriteFlag.GE.1) THEN
-        PRINT*, "--- starting matrix build"
+        PRINT*, "---------- starting matrix build -----------"
      ENDIF
 
      CALL MakeLiebMatrixStructrue(Dim, Nx, IWidth, ucl, n_uc, LSize, HAMMAT0, CubeSites, LiebSites)
@@ -154,11 +154,11 @@ PROGRAM LiebExactDiag
 !!$     END DO
 !!$108  format(1x,1I3\)
      
-     DO HubDis= HubDis0,HubDis1,dHubDis
+     DO CubeDis= CubeDis0,CubeDis1,dCubeDis
 
-        PRINT*,"main: HubDis=", HubDis
+        PRINT*,"main: Hubdis-loop, CubeDis=", CubeDis
 
-        CALL GetDirec(Dim, Nx, IWidth, HubDis, RimDis, 0.0, str)
+        CALL GetDirec(Dim, Nx, IWidth, CubeDis, LiebDis, CubeConPot, LiebConPot, str)
 
         DO Seed=ISeed, ISeed+NSeed-1
 
@@ -170,9 +170,9 @@ PROGRAM LiebExactDiag
            
            ISSeed(1)= Seed
            ISSeed(2)= IWidth
-           ISSeed(3)= NINT(HubDis*1000.) ! in lieu of "Energy"
-           ISSeed(4)= NINT(HubDis*1000.)
-           ISSeed(5)= NINT(RimDis*1000.)
+           ISSeed(3)= NINT(CubeDis*1000.) ! in lieu of "Energy"
+           ISSeed(4)= NINT(CubeDis*1000.)
+           ISSeed(5)= NINT(LiebDis*1000.)
            
 !           CALL genrand_int31(ISSeed) ! MT95 with 5 seeds
 
@@ -181,14 +181,14 @@ PROGRAM LiebExactDiag
               PRINT*, "-- Seed=", Seed
               PRINT*, "-> ISSeed=", ISSeed
            CASE(3,4)
-!!$                 PRINT*, "IS: IW=", IWidth, "hD=", NINT(HubDis*1000.), "E=", NINT(Energy*1000.), &
+!!$                 PRINT*, "IS: IW=", IWidth, "hD=", NINT(CubeDis*1000.), "E=", NINT(Energy*1000.), &
 !!$                      "S=", Seed, "IS=", ISSeed
               CALL genrand_int31(ISSeed) ! MT95 with 5 seeds
               CALL genrand_real1(drandval)
               CALL SRANDOM5(ISSeed)
               drandval=DRANDOM5(ISSeed)
               WRITE(*, '(A7,I3,A4,F6.3,A4,F5.3,A3,I5,A4,F16.10)') &
-                   "IS: IW=", IWidth, " hD=", HubDis, " rD=", RimDis, &
+                   "IS: IW=", IWidth, " CD=", CubeDis, " LD=", LiebDis, &
                    " S=", Seed, " R=", drandval
               PRINT*, "ISSeed=", ISSeed
            CASE DEFAULT
@@ -201,8 +201,8 @@ PROGRAM LiebExactDiag
 
            SELECT CASE(IKeepFlag)
            CASE(1)
-              CALL CheckOutput( Dim,Nx, IWidth, 0.0, HubDis, RimDis, &
-                   Seed, str, IErr )
+              CALL CheckOutput( Dim,Nx, IWidth, CubeDis, LiebDis, &
+                   CubeConPot, LiebConPot, Seed, str, IErr )
               IF(IErr.EQ.2) CYCLE
            END SELECT
            
@@ -223,14 +223,15 @@ PROGRAM LiebExactDiag
            DO i=1, n_uc
 
               drandval= DRANDOM5(ISSeed)
-              SUMHUBrandval=SUMHUBrandval + HubDis*(drandval - 0.5D0)
-              HAMMAT( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = HubDis*(drandval - 0.5D0)
+
+              SUMHUBrandval=SUMHUBrandval + CubeDis*(drandval - 0.5D0)
+              HAMMAT( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = CubeConPot + CubeDis*(drandval - 0.5D0)
 
               DO j=1, ucl-1
 
                  drandval= DRANDOM5(ISSeed)
-                 SUMRIMrandval=SUMRIMrandval + RimDis*(drandval - 0.5D0)
-                 HAMMAT((i-1)*ucl + j + 1 , (i-1)*ucl + j + 1) = RimDis*(drandval - 0.5D0)
+                 SUMRIMrandval=SUMRIMrandval + LiebDis*(drandval - 0.5D0)
+                 HAMMAT((i-1)*ucl + j + 1 , (i-1)*ucl + j + 1) = LiebConPot + LiebDis*(drandval - 0.5D0)
 
               END DO
 
@@ -266,12 +267,12 @@ PROGRAM LiebExactDiag
            ! WRITE the eigenvalues and -vectors
            ! ----------------------------------------------------------
 
-           !CALL WriteEvals(Dim, Nx, IWidth, LSize, HubDis, RimDis, EIGS, HAMMAT, norm, part_nr, Seed, INFO)
+           !CALL WriteEvals(Dim, Nx, IWidth, LSize, CubeDis, LiebDis, EIGS, HAMMAT, norm, part_nr, Seed, INFO)
 
            NEIG=LSize ! this is complete diagonalization
 
-           CALL WriteOutputEVal( Dim, Nx, NEIG, EIGS, &
-                IWidth, 0., HubDis, RimDis, Seed, str, IErr)
+           CALL WriteOutputEVal( Dim, Nx, NEIG, EIGS, IWidth, &
+                CubeDis, LiebDis, CubeConPot, LiebConPot, Seed, str, IErr)
            
            SELECT CASE(IStateFlag)
            CASE(0)
@@ -279,16 +280,16 @@ PROGRAM LiebExactDiag
            CASE(1)
               PRINT*,"main: DYSEV() eigenvectors will now be saved into individual files"
               DO Inum= 1,NEIG
-                 Call WriteOutputEVec(Dim, Nx, Inum, NEIG, Lsize, &
-                      HAMMAT, LSize, IWidth, 0.0, HubDis, & 
-                      RimDis, Seed, str, IErr)
+                 Call WriteOutputEVec(Dim, Nx, Inum, NEIG, Lsize, HAMMAT, LSize, &
+                      IWidth, CubeDis, LiebDis, CubeConPot, LiebConPot,&
+                      Seed, str, IErr)
               END DO
            CASE(2)
               PRINT*,"main: DYSEV() eigenvectors will now be saved into single BULK file"
 
-              Call WriteOutputEVecBULK(Dim, Nx, Lsize, NEIG, Lsize, &
-                   EIGS, LSize, IWidth, 0.0, HubDis, & 
-                   RimDis, Seed, str, IErr)
+              Call WriteOutputEVecBULK(Dim, Nx, Lsize, NEIG, Lsize, EIGS, LSize, &
+                   IWidth, CubeDis, LiebDis, CubeConPot, LiebConPot, &
+                   Seed, str, IErr)
            CASE(-1)
               PRINT*,"main: Cube/Lieb site projections of DYSEV() eigenvectors"
 
@@ -375,8 +376,9 @@ PROGRAM LiebExactDiag
                    CubeProb, CubePart, Lsize, &
                    LiebProb, LiebPart, LSize, &
                    FullPart, LSize, &
-                   IWidth, 0.0, HubDis, & 
-                   RimDis, Seed, str, IErr)
+                   IWidth, CubeDis, LiebDis, &
+                   CubeConPot, LiebConPot, &
+                   Seed, str, IErr)
               
            END SELECT
 
