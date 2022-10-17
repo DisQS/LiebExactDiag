@@ -16,18 +16,27 @@ binary=LEDdiag.IC
 # settings for directories
 
 currdir=`pwd`
-jobdir=$currdir
+#jobdir=$currdir
 
-binarydir=$HOME/Projects/LiebExactDiag/EXE
+binarydir=$currdir/../EXE
+[ -d ${binarydir} ] || mkdir ${binarydir}
 #binarydir=/storage/disqs/LiebSparseDiag/EXE
 
-for disorder in 30.0 40.0 90.0 100.0
-    #1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 20.0 50.0 60.0 70.0 80.0
+cp $currdir/../src/$binary $binarydir
+
+
+
+for CubeConstPoten in 0.0 2.0 #5.0 10.0 20.0 50.0 100.0
+do
+
+echo "--- CubeConstPoten=" $CubeConstPoten
+
+for disorder in 1.0 2.0 3.0 #4.0 5.0 6.0 7.0 8.0 9.0 10.0 20.0 50.0 60.0 70.0 80.0
 do
 
 echo "--- hDis=" $disorder
 
-jobname="LED-$size-hD$disorder"
+jobname="LED-$size-hD$disorder-CubeP$CubeConstPoten"
 echo $jobname
 
 jobfile=`printf "$jobname.sh"`
@@ -43,16 +52,20 @@ cd $jobdir
 
 cat > ${jobfile} << EOD
 #!/bin/bash
-#!/bin/bash
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=48
-#SBATCH --time=48:00:00
-#SBATCH --mem-per-cpu=31418
-#SBATCH --partition=hmem
+#PBS -l nodes=${nodes}:ppn=16
+#PBS -l pmem=${memory}
+#PBS -l walltime=04:00:00
 
-module purge
-module load GCC/10.2.0 parallel 
-module load intel
+#       The jobname
+#PBS -N ${jobname}
+
+##############################
+## comment out when INTERACTIVE
+## SLURM_NTASKS=8
+## SLURM_JOBID=1
+##############################
+
+# construct the input file
 
 for iseed in {1..$config..1}
 do
@@ -62,7 +75,7 @@ echo "--- working on config" \$iseed "with seed" \$myseed
 
 # create the input file
 echo create the input file
-inpfile=LEDdiag-$disorder-\$iseed.inp
+inpfile=LEDdiag-$disorder-$CubeConstPoten-\$iseed.inp
 touch \$inpfile
 
 echo "ISeed         = \$myseed       ">  \$inpfile #
@@ -82,33 +95,29 @@ echo "HubDis1       = $disorder           ">>  \$inpfile #
 echo "dHubDis       = 1.0           ">>  \$inpfile #
 #echo "RimDis0       = $disorder      ">>  \$inpfile #
 echo "RimDis0       = 0.0            ">>  \$inpfile #
-
+echo "CubeConstPoten = $CubeConstPoten  ">>  \$inpfile #
+echo "LiebConstPoten = 0.0           ">>  \$inpfile #
+ 
 cat \$inpfile
 
-#$binarydir/$binary <\$inpfile
+${binarydir}/${binary} <\$inpfile >& ${logfile}
+#${binarydir}/${binary} <\$inpfile >& ${logfile}
 
 done
 
-MY_PARALLEL_OPTS="-N 1 --delay .2 -j \$SLURM_NTASKS --joblog parallel-\${SLURM_JOBID}.log"
-MY_SRUN_OPTS="-N 1 -n 1 --exclusive"
-MY_EXEC="$binarydir/$binary <LEDdiag-$disorder-{}.inp"
 
-parallel \$MY_PARALLEL_OPTS srun \$MY_SRUN_OPTS \$MY_EXEC ::: {1..$config}
-
-#zip -mv LED-$disorder.zip Evec*.raw
-zip -m inp.zip LEDdiag-$disorder-*.inp
-zip -m sh.zip *.sh
-
-exit 0
+wait
+#exit 0
 
 EOD
 
 chmod 755 ${jobfile}
 #(msub -q devel $jobdir/${jobfile}) # for queueing system
 #(sbatch -q devel $jobdir/${jobfile}) # for queueing system
-sbatch ${jobfile} # for queueing system
+#sbatch ${jobfile} # for queueing system
 #(source $jobdir/${jobfile} ) >& $jobdir/${logfile} & # for parallel shell execution
 #source ${jobfile} #>& ${logfile} # for sequential shell execution
+(source ${jobfile} ) &
 
 sleep 1
 
@@ -116,3 +125,4 @@ cd ..
 
 done
 
+done
