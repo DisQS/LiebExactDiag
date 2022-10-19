@@ -2,9 +2,9 @@
 
 # settings from input
 
-size=${1:-10}
+size=${1:-8}
 seed=${2:-1}
-config=${3:-2}
+config=${3:-1}
 keep=${4:-1}
 
 echo "LED: making for M=" $size "with starting seed=" $seed "and" $config "samples"
@@ -26,17 +26,17 @@ cp $currdir/../src/$binary $binarydir
 
 
 
-for CubeConstPoten in 0.0 2.0 #5.0 10.0 20.0 50.0 100.0
+for CubeConstPoten in 100.0 #2.0 #5.0 10.0 20.0 50.0 100.0
 do
 
 echo "--- CubeConstPoten=" $CubeConstPoten
 
-for disorder in 1.0 2.0 3.0 #4.0 5.0 6.0 7.0 8.0 9.0 10.0 20.0 50.0 60.0 70.0 80.0
+for disorder in 0.0 1.0 #2.0 3.0 #4.0 5.0 6.0 7.0 8.0 9.0 10.0 20.0 50.0 60.0 70.0 80.0
 do
 
-echo "--- hDis=" $disorder
+echo "--- CDis=" $disorder
 
-jobname="LED-$size-hD$disorder-CubeP$CubeConstPoten"
+jobname="LED-$size-CD$disorder-CubeP$CubeConstPoten"
 echo $jobname
 
 jobfile=`printf "$jobname.sh"`
@@ -78,25 +78,24 @@ echo create the input file
 inpfile=LEDdiag-$disorder-$CubeConstPoten-\$iseed.inp
 touch \$inpfile
 
-echo "ISeed         = \$myseed       ">  \$inpfile #
-echo "NConfig       = 1        ">>  \$inpfile #
-echo "Dim           = 3            ">>  \$inpfile #
-echo "Nx            = 1            ">>  \$inpfile #
-echo "IBCFlag       = 1             ">>  \$inpfile #
-echo "IRNGFlag      = 0             ">>  \$inpfile #
-echo "IKeepFlag     = $keep      ">>  \$inpfile #
-echo "IWriteFlag    = 2       ">>  \$inpfile #
-echo "IStateFlag    = -1       ">>  \$inpfile #
-echo "Width0        = $size       ">>  \$inpfile #
-echo "Width1        = $size       ">>  \$inpfile #
-echo "dWidth        = 2          ">>  \$inpfile #
-echo "HubDis0       = $disorder      ">>  \$inpfile #
-echo "HubDis1       = $disorder           ">>  \$inpfile #
-echo "dHubDis       = 1.0           ">>  \$inpfile #
-#echo "RimDis0       = $disorder      ">>  \$inpfile #
-echo "RimDis0       = 0.0            ">>  \$inpfile #
-echo "CubeConstPoten = $CubeConstPoten  ">>  \$inpfile #
-echo "LiebConstPoten = 0.0           ">>  \$inpfile #
+echo "ISeed          = \$myseed       ">  \$inpfile #
+echo "NConfig        = 1              ">>  \$inpfile #
+echo "Dim            = 3              ">>  \$inpfile #
+echo "Nx             = 1              ">>  \$inpfile #
+echo "IBCFlag        = 1              ">>  \$inpfile #
+echo "IRNGFlag       = 0              ">>  \$inpfile #
+echo "IKeepFlag      = $keep          ">>  \$inpfile #
+echo "IWriteFlag     = 2              ">>  \$inpfile #
+echo "IStateFlag     = -1             ">>  \$inpfile #
+echo "Width0         = $size          ">>  \$inpfile #
+echo "Width1         = $size          ">>  \$inpfile #
+echo "dWidth         = 2              ">>  \$inpfile #
+echo "CubeConstPoten = $CubeConstPoten">>  \$inpfile #
+echo "CubeDis0       = $disorder      ">>  \$inpfile #
+echo "CubeDis1       = $disorder      ">>  \$inpfile #
+echo "dCubeDis       = 1.0            ">>  \$inpfile #
+echo "LiebConstPoten = -100.0         ">>  \$inpfile #	
+echo "LiebDis        = 0.0            ">>  \$inpfile #
  
 cat \$inpfile
 
