@@ -31,6 +31,7 @@ do
 
 echo "--- CubeConPot=" $CubeConPot
 
+
 for CubeDis in 0.0 #1.0 2.0 3.0 #4.0 5.0 6.0 7.0 8.0 9.0 10.0 20.0 50.0 60.0 70.0 80.0
 do
 
@@ -77,6 +78,7 @@ echo "--- working on config" \$iseed "with seed" \$myseed
 echo "create the input file"
 inpfile=LEDdiag-CP$CubeConPot-CD$CubeDis-\$iseed.inp
 touch \$inpfile
+
 
 echo "ISeed         = \$myseed       ">  \$inpfile #
 echo "NConfig       = 1        ">>  \$inpfile #
