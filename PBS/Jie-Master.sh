@@ -25,11 +25,12 @@ binarydir=$currdir/../EXE
 cp $currdir/../src/$binary $binarydir
 
 
-
 for CubeConPot in 20.0 30.0 #0.0 10.0 100.0 #2.0 20.0 50.0 80.0 #0.0 10.0 100.0 #0.0 10.0 100.0 # 80.0 100.0 #20.0 50.0 #2.0 10.0 #  #0.0 2.0 10.0 20.0 50.0 80.0 100.0
+
 do
 
 echo "--- CubeConPot=" $CubeConPot
+
 
 for CubeDis in 0.0 0.5 #10.0 #4.0 5.0 6.0 7.0 8.0 9.0 10.0 20.0 50.0 60.0 70.0 80.0
 do
@@ -97,6 +98,7 @@ echo "dCubeDis      = 1.0           ">>  \$inpfile #
 #echo "LiebDis0     = $disorder      ">>  \$inpfile #
 echo "LiebConPot    = 0.0           ">>  \$inpfile #
 echo "LiebDis0      = 0.0            ">>  \$inpfile #
+
  
 cat \$inpfile
 
