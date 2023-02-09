@@ -201,3 +201,51 @@ END SUBROUTINE MakeLiebMatrixStructrue
 !!$END SUBROUTINE WRITEEVALS
 
 
+Subroutine www_fcode_cn( CRA, Lsize )
+
+  USE MyNumbers
+  USE IChannels
+  
+  Implicit None
+
+  Integer(KIND=IKIND) Lsize, i
+  
+  Integer(KIND=IKIND) CRA(Lsize)
+
+  Do i=1,Lsize
+     CRA(i)=i
+  End Do
+  
+  call Random_Seed()
+  call Shuffle(CRA)
+!!$  Do i=1, Lsize
+!!$     Print*, a(i)
+!!$  END Do
+
+  Return 
+
+Contains
+
+  Subroutine Shuffle(D)
+    
+    USE MyNumbers
+    USE IChannels
+    
+    Implicit none
+    Integer(KIND=IKIND), Intent(Inout) :: D(:)
+    Integer(KIND=IKIND) :: i, p, t
+    Real(KIND=RKIND) :: r
+
+    Do i = Size(D), 2, -1
+       call Random_Number(r)
+       p= int(r*i) +1
+       t = D(p)
+       D(p) = D(i)
+       D(i) = t
+    End do
+
+  End Subroutine Shuffle
+
+End Subroutine www_fcode_cn
+
+
