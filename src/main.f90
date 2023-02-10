@@ -229,7 +229,7 @@ PROGRAM LiebExactDiag
            
            ! Give the Lieb matrix different onsite potensial
 
-           If(IRNGFlag==0)then
+           If(IRNGFlag==0)then ! constant CubeConPot on each cube site
               DO i=1, n_uc
                  
                  drandval= DRANDOM5(ISSeed)
@@ -247,7 +247,7 @@ PROGRAM LiebExactDiag
                  
               END DO
               
-           Else if(IRNGFlag==1)then
+           Else if(IRNGFlag==1)then ! +/- CubeConPot on random cube site
               DO i=1, n_uc
                  
                  drandval= DRANDOM5(ISSeed)
@@ -269,13 +269,14 @@ PROGRAM LiebExactDiag
                  Stop
               End IF
 
+              ! Add the checkerboard pattern to the cube sites
               Call www_fcode_cn( CRA, n_uc)              
               DO i=1, n_uc/2
                  drandval= DRANDOM5(ISSeed)
                  HAMMAT( (CRA(i)-1)*ucl + 1 , (CRA(i)-1)*ucl + 1 ) = -1.0D0*CubeConPot + CubeDis*(drandval - 0.5D0)
               END DO
 
-           Else if(IRNGFlag==2) then
+           Else if(IRNGFlag==2) then ! checkerboard +/- CubeConPot on each cube site
               DO i=1, n_uc
 
                  If(Dim==2)Then
@@ -310,7 +311,6 @@ PROGRAM LiebExactDiag
                     Print*,"Not finish yet!"
                     Stop
                  End If
-                                 
                  
                  drandval= DRANDOM5(ISSeed)
                  SUMHUBrandval=SUMHUBrandval + CubeDis*(drandval - 0.5D0)
