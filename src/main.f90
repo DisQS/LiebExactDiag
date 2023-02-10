@@ -40,7 +40,7 @@ PROGRAM LiebExactDiag
        NEIG     ! #eigenvalues = LSize
 
   REAL(KIND=RKIND), DIMENSION(:,:), ALLOCATABLE:: HAMMAT0
-  Integer(KIND=IKIND), DIMENSION(:), ALLOCATABLE:: CRA
+  INTEGER(KIND=IKIND), DIMENSION(:), ALLOCATABLE:: CRA
 
   ! Parameters for call function DSYEV()
   
@@ -221,117 +221,96 @@ PROGRAM LiebExactDiag
            ! ENTER random values into matrix
            ! ----------------------------------------------------------
               
-           !norm(:) = 0d0
-           !part_nr(:) = 0d0
-
            HAMMAT(:,:) = HAMMAT0(:,:)
            SUMHUBrandval= 0.0D0; SUMRIMrandval= 0.0D0
            
-           ! Give the Lieb matrix different onsite potensial
+           ! Give the Lieb matrix different onsite potentials
+           DO i=1, n_uc
 
-           If(IRNGFlag==0)then ! constant CubeConPot on each cube site
-              DO i=1, n_uc
-                 
-                 drandval= DRANDOM5(ISSeed)
-                 SUMHUBrandval=SUMHUBrandval + CubeDis*(drandval - 0.5D0)
-                 
-                 HAMMAT( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = CubeConPot + CubeDis*(drandval - 0.5D0)
-                 
-                 DO j=1, ucl-1
-                    
-                    drandval= DRANDOM5(ISSeed)
-                    SUMRIMrandval=SUMRIMrandval + LiebDis*(drandval - 0.5D0)
-                    HAMMAT((i-1)*ucl + j + 1 , (i-1)*ucl + j + 1) = LiebConPot + LiebDis*(drandval - 0.5D0)
-                    
-                 END DO
-                 
-              END DO
-              
-           Else if(IRNGFlag==1)then ! +/- CubeConPot on random cube site
-              DO i=1, n_uc
-                 
-                 drandval= DRANDOM5(ISSeed)
-                 SUMHUBrandval=SUMHUBrandval + CubeDis*(drandval - 0.5D0)
-                 
-                 HAMMAT( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = CubeConPot + CubeDis*(drandval - 0.5D0)
-                 
-                 DO j=1, ucl-1
-                    
-                    drandval= DRANDOM5(ISSeed)
-                    SUMRIMrandval=SUMRIMrandval + LiebDis*(drandval - 0.5D0)
-                    HAMMAT((i-1)*ucl + j + 1 , (i-1)*ucl + j + 1) = LiebConPot + LiebDis*(drandval - 0.5D0)
-                    
-                 END DO
-              END DO
-                            
-              IF(Mod(n_uc,2) .ne. 0) Then
-                 Print*, "Cube size are odd can not achieve 0 potential! Stop!!!!"
-                 Stop
-              End IF
+              ! CUBE onsite potentials
+              drandval= DRANDOM5(ISSeed)
 
-              ! Add the checkerboard pattern to the cube sites
-              Call www_fcode_cn( CRA, n_uc)              
-              DO i=1, n_uc/2
-                 drandval= DRANDOM5(ISSeed)
-                 HAMMAT( (CRA(i)-1)*ucl + 1 , (CRA(i)-1)*ucl + 1 ) = -1.0D0*CubeConPot + CubeDis*(drandval - 0.5D0)
-              END DO
+              SUMHUBrandval=SUMHUBrandval + CubeDis*(drandval - 0.5D0)
 
-           Else if(IRNGFlag==2) then ! checkerboard +/- CubeConPot on each cube site
-              DO i=1, n_uc
+              SELECT CASE (IRNGFlag)
+                 CASE(0) ! constant CubeConPot on each cube site
+                    HAMMAT( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = CubeConPot + CubeDis*(drandval - 0.5D0)
+                 CASE(1) ! +/- CubeConPot on random cube sites
 
-                 If(Dim==2)Then
+                    IF(MOD(n_uc,2) .NE. 0) THEN
+                       PRINT*, "main: WRNG, cube size are odd, so we can not achieve 0 potential!"
+                       PRINT*, "main: WRNG, calculation will proceed, but output is questionable."
+                    END IF
 
-                    len=1
-                    If(Mod(i,IWidth)==0)Then
-                       col=IWidth
-                       row=Int(i/IWidth)
-                    Else
-                       col=Mod(i,IWidth)
-                       row=Int(i/IWidth)+1
-                    End if
+                    IF(DRANDOM5(ISSeed)>=0.5) THEN
+                       HAMMAT( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = CubeConPot + CubeDis*(drandval - 0.5D0)
+                    ELSE
+                       HAMMAT( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = -CubeConPot + CubeDis*(drandval - 0.5D0)
+                    END IF
 
-                 Else if(Dim==3)Then
-                    
-                    If(Mod(i,IWidth**2)==0)Then
-                       col=IWidth
-                       row=IWidth
-                       len=Int(i/IWidth**2)
-                    Else
-                       If(Mod(Mod(i,IWidth**2),IWidth)==0)Then
+                 CASE(2) ! checkerboard +/- CubeConPot on each cube site
+
+                    IF(MOD(n_uc,2) .NE. 0) THEN
+                       PRINT*, "main: WRNG, cube size are odd, so we can not achieve 0 potential!"
+                       PRINT*, "main: WRNG, calculation will proceed, but output is questionable."
+                    END IF
+
+                    IF(Dim==2)THEN
+
+                       len=1
+                       IF(MOD(i,IWidth)==0)THEN
                           col=IWidth
-                          row=Int(Mod(i,IWidth**2)/IWidth)
-                       Else
-                          col=Mod(Mod(i,IWidth**2),IWidth)
-                          row=Int(Mod(i,IWidth**2)/IWidth)+1
-                       End if                      
-                       len=Int(i/IWidth**2)+1
-                    End If
-
-                 Else
-                    Print*,"Not finish yet!"
-                    Stop
-                 End If
+                          row=INT(i/IWidth)
+                       ELSE
+                          col=MOD(i,IWidth)
+                          row=INT(i/IWidth)+1
+                       END IF
+                       
+                    ELSE IF(Dim==3)THEN
+                       
+                       IF(MOD(i,IWidth**2)==0)THEN
+                          col=IWidth
+                          row=IWidth
+                          len=INT(i/IWidth**2)
+                       ELSE
+                          IF(MOD(MOD(i,IWidth**2),IWidth)==0)THEN
+                             col=IWidth
+                             row=INT(MOD(i,IWidth**2)/IWidth)
+                          ELSE
+                             col=MOD(MOD(i,IWidth**2),IWidth)
+                             row=INT(MOD(i,IWidth**2)/IWidth)+1
+                          END IF
+                          len=INT(i/IWidth**2)+1
+                       END IF
+                       
+                    ELSE
+                       PRINT*,"Not finished yet!"
+                       STOP
+                    END IF
                  
-                 drandval= DRANDOM5(ISSeed)
-                 SUMHUBrandval=SUMHUBrandval + CubeDis*(drandval - 0.5D0)
+                    drandval= DRANDOM5(ISSeed)
+                    SUMHUBrandval=SUMHUBrandval + CubeDis*(drandval - 0.5D0)
 
-                 If(Mod(len,2)==1)Then
+                    IF(MOD(len,2)==1)THEN
+                       
+                       IF((MOD(col,2)==1 .AND. MOD(row,2)==1) .OR. (MOD(col,2)==0 .AND. MOD(row,2)==0))THEN
+                          HAMMAT( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = CubeConPot + CubeDis*(drandval - 0.5D0)
+                       ELSE
+                          HAMMAT( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = -1.0*CubeConPot + CubeDis*(drandval - 0.5D0)
+                       END IF
+                       
+                    ELSE
+                       IF((MOD(col,2)==1 .AND. MOD(row,2)==1) .OR. (MOD(col,2)==0 .AND. MOD(row,2)==0))THEN
+                          HAMMAT( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = -1.0*CubeConPot + CubeDis*(drandval - 0.5D0)
+                       ELSE
+                          HAMMAT( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = CubeConPot + CubeDis*(drandval - 0.5D0)
+                       END IF
+                       
+                    END IF
 
-                    If((Mod(col,2)==1 .and. Mod(row,2)==1) .or. (Mod(col,2)==0 .and. Mod(row,2)==0))Then
-                       HAMMAT( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = CubeConPot + CubeDis*(drandval - 0.5D0)
-                    Else
-                       HAMMAT( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = -1.0*CubeConPot + CubeDis*(drandval - 0.5D0)
-                    End If
+                 END SELECT
 
-                 Else
-                    If((Mod(col,2)==1 .and. Mod(row,2)==1) .or. (Mod(col,2)==0 .and. Mod(row,2)==0))Then
-                       HAMMAT( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = -1.0*CubeConPot + CubeDis*(drandval - 0.5D0)
-                    Else
-                       HAMMAT( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = CubeConPot + CubeDis*(drandval - 0.5D0)
-                    End If
-
-                 End If
-                 
+                 ! LIEB onsite potentials
                  DO j=1, ucl-1
                     
                     drandval= DRANDOM5(ISSeed)
@@ -339,18 +318,9 @@ PROGRAM LiebExactDiag
                     HAMMAT((i-1)*ucl + j + 1 , (i-1)*ucl + j + 1) = LiebConPot + LiebDis*(drandval - 0.5D0)
                     
                  END DO
-                 
-!!$                 If(Int(n_uc/IWidth**(Dim-1)) .le. 1))
-                 
-              END DO
-              
-              
-           Else
-              Print*,"Not finish yet!!!"
-              Stop
-           End If
 
-           
+              END DO
+
 !!$           Do i=1,Lsize
 !!$              Print*,i, HAMMAT(i,i)
 !!$           END Do
@@ -399,14 +369,14 @@ PROGRAM LiebExactDiag
            CASE(1)
               PRINT*,"main: DYSEV() eigenvectors will now be saved into individual files"
               DO Inum= 1,NEIG
-                 Call WriteOutputEVec(Dim, Nx, Inum, NEIG, Lsize, HAMMAT, LSize, &
+                 CALL WriteOutputEVec(Dim, Nx, Inum, NEIG, Lsize, HAMMAT, LSize, &
                       IWidth, CubeDis, LiebDis, CubeConPot, LiebConPot,&
                       Seed, str, IErr)
               END DO
            CASE(2)
               PRINT*,"main: DYSEV() eigenvectors will now be saved into single BULK file"
 
-              Call WriteOutputEVecBULK(Dim, Nx, Lsize, NEIG, Lsize, EIGS, LSize, &
+              CALL WriteOutputEVecBULK(Dim, Nx, Lsize, NEIG, Lsize, EIGS, LSize, &
                    IWidth, CubeDis, LiebDis, CubeConPot, LiebConPot, &
                    Seed, str, IErr)
            CASE(-1)
@@ -490,7 +460,7 @@ PROGRAM LiebExactDiag
 
               ENDDO
 
-              Call WriteOutputEVecProj(Dim, Nx, Inum, NEIG, &
+              CALL WriteOutputEVecProj(Dim, Nx, Inum, NEIG, &
                    EIGS, LSize, &
                    CubeProb, CubePart, Lsize, &
                    LiebProb, LiebPart, LSize, &
