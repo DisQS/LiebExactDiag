@@ -40,7 +40,6 @@ PROGRAM LiebExactDiag
        NEIG     ! #eigenvalues = LSize
 
   REAL(KIND=RKIND), DIMENSION(:,:), ALLOCATABLE:: HAMMAT0
-  INTEGER(KIND=IKIND), DIMENSION(:), ALLOCATABLE:: CRA
 
   ! Parameters for call function DSYEV()
   
@@ -122,7 +121,6 @@ PROGRAM LiebExactDiag
      ! ----------------------------------------------------------
      
      ALLOCATE( HAMMAT0(LSize, LSize) )
-     ALLOCATE( CRA( n_uc ) )
      ALLOCATE( EIGS( LSize ) )
      ALLOCATE( WORK( LWMAX ) )
      ALLOCATE( HAMMAT( LSize, LSize ) )
@@ -475,7 +473,7 @@ PROGRAM LiebExactDiag
 
      END DO  ! Disorder cycle
 
-     DEALLOCATE ( HAMMAT0, CRA, EIGS, WORK, HAMMAT, CubeSites, LiebSites )
+     DEALLOCATE ( HAMMAT0, EIGS, WORK, HAMMAT, CubeSites, LiebSites )
 
   END DO ! IWidth cycle
   
