@@ -184,8 +184,8 @@ PROGRAM LiebExactDiag
 
            SELECT CASE(IWriteFlag)
            CASE(1,2)
-              PRINT*, "-- Seed=", Seed
-              PRINT*, "-> ISSeed=", ISSeed
+              PRINT*, "--> Seed=", Seed
+              PRINT*, "--> ISSeed=", ISSeed
            CASE(3,4)
 !!$                 PRINT*, "IS: IW=", IWidth, "hD=", NINT(CubeDis*1000.), "E=", NINT(Energy*1000.), &
 !!$                      "S=", Seed, "IS=", ISSeed
@@ -200,7 +200,7 @@ PROGRAM LiebExactDiag
            CASE DEFAULT
               PRINT*,"main: Seed=", Seed
            END SELECT
-
+ 
            ! ----------------------------------------------------------
            ! CHECK if same exists and can be overwritten
            ! ----------------------------------------------------------
@@ -214,6 +214,21 @@ PROGRAM LiebExactDiag
            
            !CALL genrand_int31(ISSeed) ! MT95 with 5 seeds, before: CALL SRANDOM(ISSeed
            CALL SRANDOM5(ISSeed) ! MT95 with 5 seeds, before: CALL SRANDOM(ISSeed)
+
+           ! ----------------------------------------------------------
+           ! LOG which order is being used
+           ! ----------------------------------------------------------
+
+           SELECT CASE(IRNGFlag)
+           CASE(0)
+              PRINT*,"--- constant CubeConPot on each cube site"
+           CASE(1)
+              PRINT*,"--- +/- CubeConPot on RANDOM cube sites"
+           CASE(2)
+              PRINT*,"--- CHECKERBOARD +/- CubeConPot on each cube site"
+           CASE DEFAULT
+              PRINT*,"--- this IRNGFlag value is NOT implemented --- ABORTING"
+           END SELECT
 
            ! ----------------------------------------------------------
            ! ENTER random values into matrix
