@@ -44,7 +44,7 @@ cd $jobdir
 cat > ${jobfile} << EOD
 #!/bin/bash
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=64
+#SBATCH --ntasks-per-node=128
 #SBATCH --time=48:00:00
 #SBATCH --mem-per-cpu=7700
 #SBATCH --partition=hmem
