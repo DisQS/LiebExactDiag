@@ -21,7 +21,7 @@ jobdir=$currdir
 binarydir=$HOME/Projects/LiebExactDiag/EXE
 #binarydir=/storage/disqs/LiebSparseDiag/EXE
 
-for CubeConPot in 0.0 1.0 2.0 5.0 10.0 20.0 50.0 100
+for CubeConPot in 1.0 2.0 5.0 10.0 20.0 50.0 100.0 # 0.0
     #1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 20.0 50.0 60.0 70.0 80.0
 do
 
@@ -43,16 +43,18 @@ cd $jobdir
 
 cat > ${jobfile} << EOD
 #!/bin/bash
-#!/bin/bash
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=48
+#SBATCH --ntasks-per-node=64
 #SBATCH --time=48:00:00
-#SBATCH --mem-per-cpu=31418
+#SBATCH --mem-per-cpu=7700
 #SBATCH --partition=hmem
+#SBATCH --account=su007-rr
 
 module purge
-module load GCC/10.2.0 parallel 
-module load intel
+module load intel/2019b # sulis
+module load GCCcore/10.3.0 parallel/20210622 # sulis
+
+#module load GCC/10.2.0 parallel intel #avon
 
 for iseed in {1..$config..1}
 do
@@ -74,7 +76,7 @@ echo "IRNGFlag      = 0             ">>  \$inpfile #
 echo "IKeepFlag     = $keep      ">>  \$inpfile #
 echo "IWriteFlag    = 2       ">>  \$inpfile #
 echo "IStateFlag    = -1       ">>  \$inpfile #
-echo "Width0        = $size       ">>  \$inpfile #
+echo "Width0        = $size       ">>  \$inpfile # 
 echo "Width1        = $size       ">>  \$inpfile #
 echo "dWidth        = 2          ">>  \$inpfile #
 echo "CubeConPot    = $CubeConPot      ">>  \$inpfile #
@@ -108,7 +110,7 @@ EOD
 chmod 755 ${jobfile}
 #(msub -q devel $jobdir/${jobfile}) # for queueing system
 #(sbatch -q devel $jobdir/${jobfile}) # for queueing system
-sbatch --account=su007 ${jobfile} # for queueing system
+sbatch ${jobfile} # for queueing system
 #(source $jobdir/${jobfile} ) >& $jobdir/${logfile} & # for parallel shell execution
 #source ${jobfile} #>& ${logfile} # for sequential shell execution
 

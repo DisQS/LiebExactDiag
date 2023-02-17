@@ -400,20 +400,20 @@ SUBROUTINE WriteOutputEVec( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
 
 
   
-  PRINT*,"DBG: WriteOutputEvec()"
+!!$  PRINT*,"DBG: WriteOutputEvec()"
 
   IErr= 0
 
   !   WRITE out the input parameter
-  WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,A1,I6.6,A3,I6.6,A3,A1,I6.6,A3,I6.6,A2,I5.5,A4)') &
-       "Eval_", "L", Dim, Nx, &
+  WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,A1,I6.6,A3,I6.6,A3,A1,I6.6,A3,I6.6,A2,I5.5,A2,I6.6,A4)') &
+       "Evec_", "L", Dim, Nx, &
        "_M",IWidth, &
        "_Espec", &! NINT(100.*ABS(Energy)), &
        "_CP",SymbolCP,NINT(100.*ABS(CubeConPot)), &
        "_CD", NINT(100.*ABS(CubeDis)), &
        "_LP", SymbolLP,NINT(100.*ABS(LiebConPot)), &
        "_LD", NINT(100.*ABS(LiebDis)), "-c",& 
-       PreSeed, ".raw" !"_s", ISSeed, 
+       PreSeed, "-N", Inum, ".raw" !"_s", ISSeed, 
 
 !!$  IF(Energy.GE.0.0D0) THEN
 !!$     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A6,I6.6,A6,I6.6,A2,I5.5,A2,I4.4,A4)') &
@@ -441,7 +441,7 @@ SUBROUTINE WriteOutputEVec( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
 !!$          ".raw"
 !!$  ENDIF
 
-  PRINT*, "WriteOutputEVec(): ", FileName
+!!$  PRINT*, "WriteOutputEVec(): ", FileName
 
   OPEN(UNIT= IChEVec, ERR= 40, STATUS= 'UNKNOWN', FILE=TRIM(ADJUSTL(str))//"/"//FileName)
 
@@ -514,15 +514,15 @@ SUBROUTINE WriteOutputEVecBULK( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
   IErr= 0
 
   !   WRITE out the input parameter
-  WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,A1,I6.6,A3,I6.6,A3,A1,I6.6,A3,I6.6,A2,I5.5,A4)') &
-       "Eval_", "L", Dim, Nx, &
+  WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,A1,I6.6,A3,I6.6,A3,A1,I6.6,A3,I6.6,A2,I5.5,A2,I6.6,A4)') &
+       "Evec_", "L", Dim, Nx, &
        "_M",IWidth, &
        "_Espec", &! NINT(100.*ABS(Energy)), &
        "_CP",SymbolCP,NINT(100.*ABS(CubeConPot)), &
        "_CD", NINT(100.*ABS(CubeDis)), &
        "_LP", SymbolLP,NINT(100.*ABS(LiebConPot)), &
        "_LD", NINT(100.*ABS(LiebDis)), "-c",& 
-       PreSeed, ".raw" !"_s", ISSeed,
+       PreSeed, "-N", Inum, ".raw" !"_s", ISSeed,
   
 !!$  IF(Energy.GE.0.0D0) THEN
 !!$     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A6,I6.6,A6,I6.6,A2,I5.5,A4)') &
