@@ -2,12 +2,13 @@
 
 # settings from input
 
-size=${1:-10}
-seed=${2:-1}
-config=${3:-2}
-keep=${4:-1}
+CPflag=${1:-1}
+size=${2:-10}
+seed=${3:-1}
+config=${4:-2}
+keep=${5:-1}
 
-echo "LED: making for M=" $size "with starting seed=" $seed "and" $config "samples"
+echo "LED: making CP"$CPflag" for M=" $size "with starting seed=" $seed "and" $config "samples"
 
 # settings for files
 
@@ -27,7 +28,7 @@ do
 
 echo "--- CCPot=" $CubeConPot
 
-jobname="LED-$size-CP$CubeConPot"
+jobname="LED-$CPflag-$size-CP$CubeConPot"
 echo $jobname
 
 jobfile=`printf "$jobname.sh"`
@@ -72,7 +73,7 @@ echo "NConfig       = 1        ">>  \$inpfile #
 echo "Dim           = 3            ">>  \$inpfile #
 echo "Nx            = 1            ">>  \$inpfile #
 echo "IBCFlag       = 1             ">>  \$inpfile #
-echo "IRNGFlag      = 0             ">>  \$inpfile #
+echo "IRNGFlag      = $CPflag           ">>  \$inpfile #
 echo "IKeepFlag     = $keep      ">>  \$inpfile #
 echo "IWriteFlag    = 2       ">>  \$inpfile #
 echo "IStateFlag    = -1       ">>  \$inpfile #
