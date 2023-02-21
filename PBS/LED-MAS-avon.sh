@@ -21,8 +21,7 @@ jobdir=$currdir
 binarydir=$HOME/Projects/LiebExactDiag/EXE
 #binarydir=/storage/disqs/LiebSparseDiag/EXE
 
-for disorder in 30.0 40.0 90.0 100.0
-    #1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 20.0 50.0 60.0 70.0 80.0
+for disorder in 30.0 40.0 90.0 100.0 1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 20.0 50.0 60.0 70.0 80.0
 do
 
 echo "--- hDis=" $disorder
