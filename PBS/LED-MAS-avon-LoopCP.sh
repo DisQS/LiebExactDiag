@@ -79,11 +79,12 @@ echo "IStateFlag    = -1       ">>  \$inpfile #
 echo "Width0        = $size       ">>  \$inpfile #
 echo "Width1        = $size       ">>  \$inpfile #
 echo "dWidth        = 2          ">>  \$inpfile #
-echo "CubeConPot    = $CubeConPot      ">>  \$inpfile #
+echo "CubeConPot0   = 0      ">>  \$inpfile #
+echo "CubeConPot1   = 20      ">>  \$inpfile #
+echo "dCubeConPot   = 0.25      ">>  \$inpfile #
 echo "CubeDis0      = $CubeDis   ">>  \$inpfile #
 echo "CubeDis1      = $CubeDis        ">>  \$inpfile #
 echo "dCubeDis      = 0.25           ">>  \$inpfile #
-#echo "LiebDis0      = $CubeConPot      ">>  \$inpfile #
 echo "LiebConPot    = 0.0            ">>  \$inpfile #
 echo "LiebDis0      = 0.0            ">>  \$inpfile #
 
