@@ -64,7 +64,7 @@ echo "--- working on config" \$iseed "with seed" \$myseed
 
 # create the input file
 echo create the input file
-inpfile=LEDdiag-$CubeConPot-\$iseed.inp
+inpfile=LEDdiag-CD$CubeDis-\$iseed.inp
 touch \$inpfile
 
 echo "ISeed         = \$myseed       ">  \$inpfile #
@@ -79,8 +79,8 @@ echo "IStateFlag    = -1       ">>  \$inpfile #
 echo "Width0        = $size       ">>  \$inpfile #
 echo "Width1        = $size       ">>  \$inpfile #
 echo "dWidth        = 2          ">>  \$inpfile #
-echo "CubeConPot0   = 0      ">>  \$inpfile #
-echo "CubeConPot1   = 20      ">>  \$inpfile #
+echo "CubeConPot0   = 0.      ">>  \$inpfile #
+echo "CubeConPot1   = 20.      ">>  \$inpfile #
 echo "dCubeConPot   = 0.25      ">>  \$inpfile #
 echo "CubeDis0      = $CubeDis   ">>  \$inpfile #
 echo "CubeDis1      = $CubeDis        ">>  \$inpfile #
@@ -96,12 +96,12 @@ done
 
 MY_PARALLEL_OPTS="-N 1 --delay .2 -j \$SLURM_NTASKS --joblog parallel-\${SLURM_JOBID}.log"
 MY_SRUN_OPTS="-N 1 -n 1 --exclusive"
-MY_EXEC="$binarydir/$binary <LEDdiag-$CubeConPot-{}.inp"
+MY_EXEC="$binarydir/$binary <LEDdiag-CD$CubeDis-{}.inp"
 
 parallel \$MY_PARALLEL_OPTS srun \$MY_SRUN_OPTS \$MY_EXEC ::: {1..$config}
 
 #zip -mv LED-$CubeConPot.zip Evec*.raw
-zip -m inp.zip LEDdiag-$CubeConPot-*.inp
+zip -m inp.zip LEDdiag-CD$CubeDis-*.inp
 zip -m sh.zip *.sh
 
 exit 0
