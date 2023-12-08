@@ -61,12 +61,12 @@ Subroutine MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr)
 
         IF(Flag)THEN
            CALL RANDOM_NUMBER(randhopping)
-        randhopping = randhopping +0.5D0
+           randhopping = randhopping +0.5D0
            matr(ind, (i-1)*ucl + ucl_d(j) + (nu-1) - ucl*(n)**(j-1) + ucl*(n)**j) = randhopping
            matr((i-1)*ucl + ucl_d(j) + (nu-1) - ucl*(n)**(j-1) + ucl*(n)**j, ind) = randhopping
         ELSE
            CALL RANDOM_NUMBER(randhopping)
-        randhopping = randhopping +0.5D0
+           randhopping = randhopping +0.5D0
            matr(ind, (i-1)*ucl + ucl_d(j) + (nu-1) - ucl*(n)**(j-1)) = randhopping
            matr((i-1)*ucl + ucl_d(j) + (nu-1) - ucl*(n)**(j-1), ind) = randhopping
         END IF
@@ -87,17 +87,17 @@ Subroutine MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr)
               !Hopping term
               IF(k==1)THEN
                  CALL RANDOM_NUMBER(randhopping)
-        randhopping = randhopping +0.5D0
+                 randhopping = randhopping +0.5D0
                  matr(ind, ind - (j-1)*nu -1) = randhopping
                  matr(ind - (j-1)*nu -1, ind) = randhopping              
               ELSE
                  CALL RANDOM_NUMBER(randhopping)
-        randhopping = randhopping +0.5D0
+                 randhopping = randhopping +0.5D0
                  matr(ind, ind - 1) = randhopping
                  matr(ind - 1, ind) = randhopping
               END IF
               CALL RANDOM_NUMBER(randhopping)
-        randhopping = randhopping +0.5D0
+              randhopping = randhopping +0.5D0
               matr(ind, ind + 1) = randhopping
               matr(ind + 1, ind) = randhopping
 
@@ -124,24 +124,24 @@ Subroutine MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr)
 
         IF(nu==1) THEN
            CALL RANDOM_NUMBER(randhopping)
-        randhopping = randhopping +0.5D0
+           randhopping = randhopping +0.5D0
            matr(ind, ind - ucl_d(j) +1) = randhopping
            matr(ind - ucl_d(j) +1, ind) = randhopping
         ELSE
            CALL RANDOM_NUMBER(randhopping)
-        randhopping = randhopping +0.5D0
+           randhopping = randhopping +0.5D0
            matr(ind, ind - 1) = randhopping
            matr(ind - 1, ind) = randhopping
         END IF
 
         IF(Flag)THEN
            CALL RANDOM_NUMBER(randhopping)
-        randhopping = randhopping +0.5D0
+           randhopping = randhopping +0.5D0
            matr(ind, (i-1)*ucl + 1 - (n-1)*ucl*(n)**(j-1)) = randhopping
            matr((i-1)*ucl + 1 - (n-1)*ucl*(n)**(j-1), ind) = randhopping
         ELSE
            CALL RANDOM_NUMBER(randhopping)
-        randhopping = randhopping +0.5D0
+           randhopping = randhopping +0.5D0
            matr(ind, (i-1)*ucl + 1 + ucl*(n)**(j-1)) = randhopping
            matr((i-1)*ucl + 1 + ucl*(n)**(j-1), ind) = randhopping
         END IF
