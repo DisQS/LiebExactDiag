@@ -16,6 +16,7 @@ SUBROUTINE MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr, cubesites, li
   INTEGER(KIND=IKIND) i, j, k, ind, cubecount,liebcount
 
   LOGICAL(KIND=8) Flag
+  REAL(KIND=RKIND) randhopping
 
   INTEGER(KIND=IKIND), ALLOCATABLE :: ucl_d(:) 
   REAL(KIND=RKIND) matr(nt, nt)! , matr_W( nt, nt )
@@ -65,16 +66,21 @@ SUBROUTINE MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr, cubesites, li
         ELSE
            Flag = ( i<=n**2 )
         END IF
-
-        matr(ind, (i-1)*ucl + ucl_d(j)) = 1.0D0
-        matr((i-1)*ucl + ucl_d(j), ind) = 1.0D0
+        CALL RANDOM_NUMBER(randhopping)
+        randhopping = randhopping +0.5D0
+        matr(ind, (i-1)*ucl + ucl_d(j)) = randhopping
+        matr((i-1)*ucl + ucl_d(j), ind) = randhopping
 
         IF(Flag)THEN
-           matr(ind, (i-1)*ucl + ucl_d(j) + (nu-1) - ucl*(n)**(j-1) + ucl*(n)**j) = 1.0D0
-           matr((i-1)*ucl + ucl_d(j) + (nu-1) - ucl*(n)**(j-1) + ucl*(n)**j, ind) = 1.0D0
+           CALL RANDOM_NUMBER(randhopping)
+           randhopping = randhopping +0.5D0
+           matr(ind, (i-1)*ucl + ucl_d(j) + (nu-1) - ucl*(n)**(j-1) + ucl*(n)**j) = randhopping
+           matr((i-1)*ucl + ucl_d(j) + (nu-1) - ucl*(n)**(j-1) + ucl*(n)**j, ind) = randhopping
         ELSE
-           matr(ind, (i-1)*ucl + ucl_d(j) + (nu-1) - ucl*(n)**(j-1)) = 1.0D0
-           matr((i-1)*ucl + ucl_d(j) + (nu-1) - ucl*(n)**(j-1), ind) = 1.0D0
+           CALL RANDOM_NUMBER(randhopping)
+           randhopping = randhopping +0.5D0 
+           matr(ind, (i-1)*ucl + ucl_d(j) + (nu-1) - ucl*(n)**(j-1)) = randhopping
+           matr((i-1)*ucl + ucl_d(j) + (nu-1) - ucl*(n)**(j-1), ind) = randhopping
         END IF
 
      END DO
@@ -95,14 +101,20 @@ SUBROUTINE MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr, cubesites, li
               matr(ind,ind) = 0.0D0
               !Hopping term
               IF(k==1)THEN
-                 matr(ind, ind - (j-1)*nu -1) = 1.0D0
-                 matr(ind - (j-1)*nu -1, ind) = 1.0D0                
+                 CALL RANDOM_NUMBER(randhopping)
+                 randhopping = randhopping +0.5D0
+                 matr(ind, ind - (j-1)*nu -1) = randhopping
+                 matr(ind - (j-1)*nu -1, ind) = randhopping                
               ELSE
-                 matr(ind, ind - 1) = 1.0D0
-                 matr(ind - 1, ind) = 1.0D0
+                 CALL RANDOM_NUMBER(randhopping)
+                 randhopping = randhopping +0.5D0
+                 matr(ind, ind - 1) = randhopping
+                 matr(ind - 1, ind) = randhopping
               END IF
-              matr(ind, ind + 1) = 1.0D0
-              matr(ind + 1, ind) = 1.0D0
+              CALL RANDOM_NUMBER(randhopping)
+              randhopping = randhopping +0.5D0
+              matr(ind, ind + 1) = randhopping
+              matr(ind + 1, ind) = randhopping
 
            END DO
 
@@ -129,19 +141,27 @@ SUBROUTINE MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr, cubesites, li
         matr(ind, ind) = 0.0D0 
 
         IF(nu==1) THEN
-           matr(ind, ind - ucl_d(j) +1) = 1.0D0
-           matr(ind - ucl_d(j) +1, ind) = 1.0D0
+           CALL RANDOM_NUMBER(randhopping)
+           randhopping = randhopping +0.5D0
+           matr(ind, ind - ucl_d(j) +1) = randhopping
+           matr(ind - ucl_d(j) +1, ind) = randhopping
         ELSE
-           matr(ind, ind - 1) = 1.0D0
-           matr(ind - 1, ind) = 1.0D0
+           CALL RANDOM_NUMBER(randhopping)
+           randhopping = randhopping +0.5D0
+           matr(ind, ind - 1) = randhopping
+           matr(ind - 1, ind) = randhopping
         END IF
 
         IF(Flag)THEN
-           matr(ind, (i-1)*ucl + 1 - (n-1)*ucl*(n)**(j-1)) = 1.0D0
-           matr((i-1)*ucl + 1 - (n-1)*ucl*(n)**(j-1), ind) = 1.0D0
+           CALL RANDOM_NUMBER(randhopping)
+           randhopping = randhopping +0.5D0
+           matr(ind, (i-1)*ucl + 1 - (n-1)*ucl*(n)**(j-1)) = randhopping
+           matr((i-1)*ucl + 1 - (n-1)*ucl*(n)**(j-1), ind) = randhopping
         ELSE
-           matr(ind, (i-1)*ucl + 1 + ucl*(n)**(j-1)) = 1.0D0
-           matr((i-1)*ucl + 1 + ucl*(n)**(j-1), ind) = 1.0D0
+           CALL RANDOM_NUMBER(randhopping)
+           randhopping = randhopping +0.5D0
+           matr(ind, (i-1)*ucl + 1 + ucl*(n)**(j-1)) = randhopping
+           matr((i-1)*ucl + 1 + ucl*(n)**(j-1), ind) = randhopping
         END IF
      END DO
 
