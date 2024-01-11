@@ -1,4 +1,13 @@
+!-----------------------------------------------------------------
 !
+! LEDdiag
+!
+!-----------------------------------------------------------------
+! exact diagonalization of 2D and 3D extended Lieb models
+! see https://github.com/DisQS/LiebExactDiag
+!-----------------------------------------------------------------
+
+!-----------------------------------------------------------------
 !
 !   Call function DSYEV() to calculate eigenvalues and eigenvectors
 !   for Lieb matrix and its extendsions(2D and 3D)
@@ -8,7 +17,6 @@
 !   IRNGFlag  0 CubeConPot on Cube sites.
 !             1 CubeConPot and -CubeConPot randomly on Cube sites.
 !             2 CubeConPot and -CubeConPot on Cube sites with checkboard pattern   
-!
 !
 !--------------------------------------------------------------------------------------
 
@@ -260,9 +268,11 @@ PROGRAM LiebExactDiag
                     END IF
 
                     IF(DRANDOM5(ISSeed)>=0.5) THEN
-                       HAMMAT( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = CubeConPot + CubeDis*(drandval - 0.5D0)
+                       HAMMAT( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = &
+                            CubeConPot + CubeDis*(drandval - 0.5D0)
                     ELSE
-                       HAMMAT( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = -CubeConPot + CubeDis*(drandval - 0.5D0)
+                       HAMMAT( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = &
+                            -CubeConPot + CubeDis*(drandval - 0.5D0)
                     END IF
 
                  CASE(2) ! checkerboard +/- CubeConPot on each cube site

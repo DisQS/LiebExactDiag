@@ -1,10 +1,11 @@
-! ********************************************************************
-!       
-! For Lieb model, call the function DSYEV() to calculate eigenvalues
-! and eigenvectors
+!-----------------------------------------------------------------
 !
-! ********************************************************************
-      
+! LEDdiag
+!
+!-----------------------------------------------------------------
+! exact diagonalization of 2D and 3D extended Lieb models
+! see https://github.com/DisQS/LiebExactDiag
+!-----------------------------------------------------------------
 
 ! --------------------------------------------------------------------
 ! Input:
@@ -110,11 +111,43 @@ SUBROUTINE Input(IErr)
 
   ILine= ILine+1
   READ(IChInp,15,ERR=20) LiebConPot
-  PRINT*,"LiebConPot  = ", LiebConPot
+  PRINT*,"LiebConPot   = ", LiebConPot
 
   ILine= ILine+1
   READ(IChInp,15,ERR=20) LiebDis
   PRINT*,"LiebDis      = ", LiebDis
+  
+  ILine= ILine+1
+  READ(IChInp,15,ERR=20) CubeShiftOD
+  PRINT*,"CubeShiftOD  = ", CubeShiftOD
+  
+  ILine= ILine+1
+  READ(IChInp,15,ERR=20) CubeDisOD0
+  PRINT*,"CubeDisOD0   = ", CubeDisOD0
+  
+  ILine= ILine+1
+  READ(IChInp,15,ERR=20) CubeDisOD1
+  PRINT*,"CubeDisOD1   = ", CubeDisOD1
+  
+  ILine= ILine+1
+  READ(IChInp,15,ERR=20) dCubeDisOD
+  PRINT*,"dCubeDisOD   = ", dCubeDisOD
+  
+  ILine= ILine+1
+  READ(IChInp,15,ERR=20) LiebShiftOD
+  PRINT*,"LiebShiftOD  = ", LiebShiftOD
+  
+  ILine= ILine+1
+  READ(IChInp,15,ERR=20) LiebDisOD0
+  PRINT*,"LiebDisOD0   = ", LiebDisOD0
+  
+  ILine= ILine+1
+  READ(IChInp,15,ERR=20) LiebDisOD1
+  PRINT*,"LiebDisOD1   = ", LiebDisOD1
+  
+  ILine= ILine+1
+  READ(IChInp,15,ERR=20) dLiebDisOD
+  PRINT*,"dLiebDisOD   = ", dLiebDisOD
   
 10 FORMAT(16X,I15.1)
   ! 10	FORMAT("IMAXIteration= ",I15.1)
@@ -142,8 +175,16 @@ SUBROUTINE Input(IErr)
      PRINT*,"CubeDis0      = ", CubeDis0
      PRINT*,"CubeDis1      = ", CubeDis1
      PRINT*,"dCubeDis      = ", dCubeDis
-     PRINT*,"LiebConPot= ", LiebConPot
-     PRINT*,"LiebDis       = ", LiebDis     
+     PRINT*,"LiebConPot    = ", LiebConPot
+     PRINT*,"LiebDis       = ", LiebDis
+     PRINT*,"CubeShiftOD   = ", CubeShiftOD 
+     PRINT*,"CubeDisOD0    = ", CubeDisOD0
+     PRINT*,"CubeDisOD1    = ", CubeDisOD1
+     PRINT*,"dCubeDisOD    = ", dCubeDisOD
+     PRINT*,"LiebShiftOD   = ", LiebShiftOD 
+     PRINT*,"LiebDisOD0    = ", LiebDisOD0
+     PRINT*,"LiebDisOD1    = ", LiebDisOD1
+     PRINT*,"dLiebDisOD    = ", dLiebDisOD
   ENDIF
 
   CLOSE(IChInp)

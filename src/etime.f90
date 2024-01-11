@@ -1,3 +1,12 @@
+!-----------------------------------------------------------------
+!
+! LEDdiag
+!
+!-----------------------------------------------------------------
+! exact diagonalization of 2D and 3D extended Lieb models
+! see https://github.com/DisQS/LiebExactDiag
+!-----------------------------------------------------------------
+
 ! --------------------------------------------------------------------------
 ! dummy function ETIME to be used with compilers like ICF that don't have
 ! a useful ETIME definition

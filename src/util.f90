@@ -1,3 +1,12 @@
+!-----------------------------------------------------------------
+!
+! LEDdiag
+!
+!-----------------------------------------------------------------
+! exact diagonalization of 2D and 3D extended Lieb models
+! see https://github.com/DisQS/LiebExactDiag
+!-----------------------------------------------------------------
+
 SUBROUTINE MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr, cubesites, liebsites)
 
   USE MyNumbers
