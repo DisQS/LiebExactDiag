@@ -74,6 +74,10 @@ SUBROUTINE Input(IErr)
   PRINT*,"IWriteFlag   = ", IStateFlag
   
   ILine= ILine+1
+  READ(IChInp,10,ERR=20) IFluxFlag
+  PRINT*,"IFluxFlag    = ", IFluxFlag
+  
+  ILine= ILine+1
   READ(IChInp,10,ERR=20) Width0
   PRINT*,"Width0       = ",Width0
   
