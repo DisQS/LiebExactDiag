@@ -356,12 +356,12 @@ PROGRAM LiebExactDiag
 
               PRINT*, "STARTing the diagonalization process"
 
+              !PRINT*, "DSYEV: computing WORK space"
               LWORK =  -1  !3*LSize
-
               CALL DSYEV( 'V', 'Upper', LSize, HAMMAT, LSize, EIGS, WORK, LWORK, INFO )
 
+              !PRINT*, "DSYEV: using WORK space"
               LWORK = MIN( LWMAX, INT( WORK( 1 ) ) )
-
               CALL DSYEV( 'V', 'Upper', LSize, HAMMAT, LSize, EIGS, WORK, LWORK, INFO ) 
 
               IF(INFO.NE.0) THEN
