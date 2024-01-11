@@ -85,8 +85,16 @@ SUBROUTINE Input(IErr)
   PRINT*,"dWidth       = ", dWidth
 
   ILine= ILine+1
-  READ(IChInp,15,ERR=20) CubeConPot
-  PRINT*,"CubeConPot   = ", CubeConPot
+  READ(IChInp,15,ERR=20) CubeConPot0
+  PRINT*,"CubeConPot0  = ", CubeConPot0
+
+  ILine= ILine+1
+  READ(IChInp,15,ERR=20) CubeConPot1
+  PRINT*,"CubeConPot1  = ", CubeConPot1
+
+  ILine= ILine+1
+  READ(IChInp,15,ERR=20) dCubeConPot
+  PRINT*,"dCubeConPot  = ", dCubeConPot
 
   ILine= ILine+1
   READ(IChInp,15,ERR=20) CubeDis0
@@ -128,7 +136,9 @@ SUBROUTINE Input(IErr)
      PRINT*,"Width0        = ", Width0
      PRINT*,"Width1        = ", Width1
      PRINT*,"dWidth        = ", dWidth
-     PRINT*,"CubeConPot= ", CubeConPot
+     PRINT*,"CubeConPot0   = ", CubeConPot0
+     PRINT*,"CubeConPot1   = ", CubeConPot1
+     PRINT*,"dCubeConPot   = ", dCubeConPot
      PRINT*,"CubeDis0      = ", CubeDis0
      PRINT*,"CubeDis1      = ", CubeDis1
      PRINT*,"dCubeDis      = ", dCubeDis

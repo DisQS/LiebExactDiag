@@ -2,10 +2,11 @@
 
 # settings from input
 
-size=${1:-10}
-seed=${2:-1}
-config=${3:-2}
-keep=${4:-1}
+CPflag=${1:-1}
+size=${2:-10}
+seed=${3:-1}
+config=${4:-2}
+keep=${5:-1}
 
 echo "LED: making for M=" $size "with starting seed=" $seed "and" $config "samples"
 
@@ -21,12 +22,14 @@ jobdir=$currdir
 binarydir=$HOME/Projects/LiebExactDiag/EXE
 #binarydir=/storage/disqs/LiebSparseDiag/EXE
 
-for disorder in 30.0 40.0 90.0 100.0 1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 20.0 50.0 60.0 70.0 80.0
+for CubeDis in 0.0 1.0 2.0 5.0 #10.0 20.0 50.0 100.0
+#for CubeConPot in 0.0 1.0 2.0 5.0 #10.0 20.0 50.0 100.0
+    #1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 20.0 50.0 60.0 70.0 80.0
 do
 
-echo "--- hDis=" $disorder
+echo "--- CCPot=" $CubeConPot
 
-jobname="LED-$size-hD$disorder"
+jobname="LED-$CPflag-$size-CP$CubeConPot"
 echo $jobname
 
 jobfile=`printf "$jobname.sh"`
@@ -44,7 +47,7 @@ cat > ${jobfile} << EOD
 #!/bin/bash
 #!/bin/bash
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=48
+#SBATCH --ntasks-per-node=24
 #SBATCH --time=48:00:00
 #SBATCH --mem-per-cpu=31418
 #SBATCH --partition=hmem
@@ -61,7 +64,7 @@ echo "--- working on config" \$iseed "with seed" \$myseed
 
 # create the input file
 echo create the input file
-inpfile=LEDdiag-$disorder-\$iseed.inp
+inpfile=LEDdiag-CD$CubeDis-\$iseed.inp
 touch \$inpfile
 
 echo "ISeed         = \$myseed       ">  \$inpfile #
@@ -69,18 +72,21 @@ echo "NConfig       = 1        ">>  \$inpfile #
 echo "Dim           = 3            ">>  \$inpfile #
 echo "Nx            = 1            ">>  \$inpfile #
 echo "IBCFlag       = 1             ">>  \$inpfile #
-echo "IRNGFlag      = 0             ">>  \$inpfile #
+echo "IRNGFlag      = $CPflag     ">>  \$inpfile #
 echo "IKeepFlag     = $keep      ">>  \$inpfile #
 echo "IWriteFlag    = 2       ">>  \$inpfile #
 echo "IStateFlag    = -1       ">>  \$inpfile #
 echo "Width0        = $size       ">>  \$inpfile #
 echo "Width1        = $size       ">>  \$inpfile #
 echo "dWidth        = 2          ">>  \$inpfile #
-echo "HubDis0       = $disorder      ">>  \$inpfile #
-echo "HubDis1       = $disorder           ">>  \$inpfile #
-echo "dHubDis       = 1.0           ">>  \$inpfile #
-#echo "RimDis0       = $disorder      ">>  \$inpfile #
-echo "RimDis0       = 0.0            ">>  \$inpfile #
+echo "CubeConPot0   = 0.      ">>  \$inpfile #
+echo "CubeConPot1   = 20.      ">>  \$inpfile #
+echo "dCubeConPot   = 0.25      ">>  \$inpfile #
+echo "CubeDis0      = $CubeDis   ">>  \$inpfile #
+echo "CubeDis1      = $CubeDis        ">>  \$inpfile #
+echo "dCubeDis      = 0.25           ">>  \$inpfile #
+echo "LiebConPot    = 0.0            ">>  \$inpfile #
+echo "LiebDis0      = 0.0            ">>  \$inpfile #
 
 cat \$inpfile
 
@@ -90,12 +96,12 @@ done
 
 MY_PARALLEL_OPTS="-N 1 --delay .2 -j \$SLURM_NTASKS --joblog parallel-\${SLURM_JOBID}.log"
 MY_SRUN_OPTS="-N 1 -n 1 --exclusive"
-MY_EXEC="$binarydir/$binary <LEDdiag-$disorder-{}.inp"
+MY_EXEC="$binarydir/$binary <LEDdiag-CD$CubeDis-{}.inp"
 
 parallel \$MY_PARALLEL_OPTS srun \$MY_SRUN_OPTS \$MY_EXEC ::: {1..$config}
 
-#zip -mv LED-$disorder.zip Evec*.raw
-zip -m inp.zip LEDdiag-$disorder-*.inp
+#zip -mv LED-$CubeConPot.zip Evec*.raw
+zip -m inp.zip LEDdiag-CD$CubeDis-*.inp
 zip -m sh.zip *.sh
 
 exit 0
@@ -105,6 +111,7 @@ EOD
 chmod 755 ${jobfile}
 #(msub -q devel $jobdir/${jobfile}) # for queueing system
 #(sbatch -q devel $jobdir/${jobfile}) # for queueing system
+#sbatch --account=su007 ${jobfile} # for queueing system
 sbatch ${jobfile} # for queueing system
 #(source $jobdir/${jobfile} ) >& $jobdir/${logfile} & # for parallel shell execution
 #source ${jobfile} #>& ${logfile} # for sequential shell execution
