@@ -1,19 +1,12 @@
 #-----------------------------------------------------------------
 #
-# AML
+# LEDdiag
 #
 #-----------------------------------------------------------------
-#
-# $Header: /home/cvs/phsht/AML/src/makefile.IC,v 1.2 2007/09/25 10:30:33 phsht Exp $
-#
-# $Log: makefile.IC,v $
-# Revision 1.2  2007/09/25 10:30:33  phsht
-# rewrote to make "look" nicer and removed an ERROR for NEvals and Energy; now makefile has proper flags to check for these things automatically
-#
-# Revision 1.1  2007/09/20 16:53:39  phrfar
-# previous files from a project of Rudo's. To be used as templates.
-#
-#-----------------------------------------------------------------#
+# exact diagonalization of 2D and 3D extended Lieb models
+#-----------------------------------------------------------------
+# SCRTP:
+# module load intel imkl
 
 F77 = ifort -xHOST
 F90 = ifort -xHOST
@@ -31,9 +24,8 @@ CCFLAGS = -O2
 
 LIBDIR = $(HOME)/f77/lib
 #LIBFLAGS  = -L../lib/JADAMILU_AMD64_4_ifort/JADAMILU/lib -ljadamilu -lblas -llapack -lg2c
-LIBFLAGS  = -lblas -llapack
-
-#LIBFLAGS  = -llapack -lblas 
+#LIBFLAGS  = -lblas -llapack
+LIBFLAGS  = -qmkl
 
 PRINT1 = a2ps -g -o-
 PRINT2 = > LEDdiag.ps # | fleet -odouble
