@@ -477,51 +477,32 @@ END SUBROUTINE WriteOutputEVal
 !
 ! IErr	error code
 
-SUBROUTINE WriteOutputEVec( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
-     IWidth, CubeDis, LiebDis, CubeConPot, LiebConPot, &
-     PreSeed, DirName, IErr)
+SUBROUTINE WriteOutputEVec( Inum, NEVals, Lsize, VECS, VECS_size, &
+     IWidth, PreSeed, DirName, MiddleName, IErr)
 
   USE MyNumbers
   USE IChannels
 !  USE DPara
 !  USE IPara
 
-  INTEGER(KIND=IKIND) Dim, Nx
   INTEGER(KIND=IKIND) Inum, PreSeed, ISSeed, IWidth, IErr, Lsize, VECS_size, NEVals, i
-  REAL(KIND=RKIND) CubeDis, LiebDis, CubeConPot, LiebConPot
 
   REAL(KIND=RKIND) VECS(VECS_size,VECS_size)
 
-  CHARACTER*100 FileName, DirName
-  CHARACTER*1 SymbolCP,symbolLP
-
+  CHARACTER(len=*) DirName, MiddleName
+  CHARACTER*50 Prefix, Postfix
+  CHARACTER*200 FileName
   
 !!$  PRINT*,"DBG: WriteOutputEvec()"
-
   IErr= 0
 
-  IF(CubeConPot.GE.0.0D0) THEN
-     SymbolCP="+"
-  ELSE
-     SymbolCP="-"
-  END IF
-
-  IF(LiebConPot.GE.0.0D0) THEN
-     SymbolLP="+"
-  ELSE
-     SymbolLP="-"
-  END IF
-  !   WRITE out the input parameter
-  WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,A1,I6.6,A3,I6.6,A3,A1,I6.6,A3,I6.6,A2,I5.5,A2,I6.6,A4)') &
-       "Evec_", "L", Dim, Nx, &
-       "_M",IWidth, &
-       "_Espec", &! NINT(100.*ABS(Energy)), &
-       "_CP",SymbolCP,NINT(100.*ABS(CubeConPot)), &
-       "_CD", NINT(100.*ABS(CubeDis)), &
-       "_LP", SymbolLP,NINT(100.*ABS(LiebConPot)), &
-       "_LD", NINT(100.*ABS(LiebDis)), "-c",& 
-       PreSeed, "-N", Inum, ".raw" !"_s", ISSeed, 
-
+  WRITE(Prefix, '(A5)') "Evec_"
+  WRITE(Postfix, '(A2,I5.5A2,I5.5,A4)') "-c",  PreSeed, "-N", Inum, ".raw" 
+  !PRINT*, Prefix, Postfix
+  
+  FileName= TRIM(Prefix)//TRIM(MiddleName)//TRIM(Postfix)
+  !PRINT*, FileName
+  
 !!$  PRINT*, "WriteOutputEVec(): ", FileName
 
   OPEN(UNIT= IChEVec, ERR= 40, STATUS= 'UNKNOWN', FILE=TRIM(ADJUSTL(DirName))//"/"//FileName)
@@ -559,78 +540,33 @@ END SUBROUTINE WriteOutputEVec
 !
 ! IErr	error code
 
-SUBROUTINE WriteOutputEVecBULK( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
-     IWidth, CubeDis, LiebDis, CubeConPot, LiebConPot, &
-     PreSeed, DirName, IErr)
+SUBROUTINE WriteOutputEVecBULK( Inum, NEVals, Lsize, VECS, VECS_size, &
+     IWidth, PreSeed, DirName, Middlename, IErr)
 
   USE MyNumbers
   USE IChannels
 !  USE DPara
 !  USE IPara
 
-  INTEGER(KIND=IKIND) Dim, Nx
   INTEGER(KIND=IKIND) Inum, PreSeed, ISSeed, IWidth, IErr, Lsize, VECS_size, NEVals, i,j
-  REAL(KIND=RKIND) CubeDis, LiebDis, CubeConPot, LiebConPot
 
   REAL(KIND=RKIND) VECS(VECS_size,VECS_size)
 
-  CHARACTER*100 FileName, DirName
-  CHARACTER*1 SymbolCP,symbolLP
-
-  IF(CubeConPot.GE.0.0D0) THEN
-     SymbolCP="+"
-  ELSE
-     SymbolCP="-"
-  END IF
-
-  IF(LiebConPot.GE.0.0D0) THEN
-     SymbolLP="+"
-  ELSE
-     SymbolLP="-"
-  END IF
-
+  CHARACTER(len=*) DirName, MiddleName
+  CHARACTER*50 Prefix, Postfix
+  CHARACTER*200 FileName
 
   PRINT*,"DBG: WriteOutputEvecBULK()"
 
   IErr= 0
 
-  !   WRITE out the input parameter
-  WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,A1,I6.6,A3,I6.6,A3,A1,I6.6,A3,I6.6,A2,I5.5,A2,I6.6,A4)') &
-       "Evec_", "L", Dim, Nx, &
-       "_M",IWidth, &
-       "_Espec", &! NINT(100.*ABS(Energy)), &
-       "_CP",SymbolCP,NINT(100.*ABS(CubeConPot)), &
-       "_CD", NINT(100.*ABS(CubeDis)), &
-       "_LP", SymbolLP,NINT(100.*ABS(LiebConPot)), &
-       "_LD", NINT(100.*ABS(LiebDis)), "-c",& 
-       PreSeed, "-N", Inum, ".raw" !"_s", ISSeed,
+  WRITE(Prefix, '(A6)') "EvecB_"
+  WRITE(Postfix, '(A2,I5.5,A4,I5.5,A4)') "-c",  PreSeed, "-N", Inum, ".raw" 
+  !PRINT*, Prefix, Postfix
   
-!!$  IF(Energy.GE.0.0D0) THEN
-!!$     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A6,I6.6,A6,I6.6,A2,I5.5,A4)') &
-!!$     !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
-!!$          "Evec-","L", Dim, Nx, &
-!!$          "-M", IWidth, &
-!!$          "-Espec", & !NINT(100.0D0*ABS(Energy)), &
-!!$          "-hD", NINT(100.0D0*ABS(CubeDis)), &
-!!$          "-rD", NINT(100.0D0*ABS(LiebDis)), &
-!!$          "-CP", NINT(100.*ABS(CubeConPot)), &
-!!$          "-LP", NINT(100.*ABS(LiebConPot)), &
-!!$          "-c", PreSeed, &! "-N", Inum, & !"_s", ISSeed, 
-!!$          ".raw"
-!!$  ELSE
-!!$     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A6,I6.6,A6,I6.6,A2,I5.5,A4)') &
-!!$     !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
-!!$          "Evec-","L",Dim, Nx, &
-!!$          "-M", IWidth, &
-!!$          "-Espec", & !NINT(100.0D0*ABS(Energy)), &
-!!$          "-dD", NINT(100.0D0*ABS(CubeDis)), &
-!!$          "-rD", NINT(100.0D0*ABS(LiebDis)), &
-!!$          "-CP", NINT(100.*ABS(CubeConPot)), &
-!!$          "-LP", NINT(100.*ABS(LiebConPot)), &
-!!$          "-c", PreSeed, &! "-N", Inum, & !"_s", ISSeed, 
-!!$          ".raw"
-!!$  ENDIF
-
+  FileName= TRIM(Prefix)//TRIM(MiddleName)//TRIM(Postfix)
+  !PRINT*, FileName
+  
   PRINT*, "WriteOutputEVecBULK(): ", FileName
 
   OPEN(UNIT= IChEVec, ERR= 40, STATUS= 'UNKNOWN', FILE=TRIM(ADJUSTL(DirName))//"/"//FileName)
@@ -670,14 +606,12 @@ END SUBROUTINE WriteOutputEVecBULK
 !
 ! IErr	error code
 
-SUBROUTINE WriteOutputEVecProj( Dim, Nx, Inum, NEVals, &
+SUBROUTINE WriteOutputEVecProj( Inum, NEVals, &
      EIGS, LSize, &
      CubeProb, CubePart, Cube_size, &
      LiebProb, LiebPart, Lieb_size, &
      FullPart, Full_size, &
-     IWidth, CubeDis, LiebDis, &
-     CubeConPot, LiebConPot, &
-     PreSeed, DirName, IErr)
+     IWidth, PreSeed, DirName, Middlename, IErr)
 
   USE MyNumbers
   USE IChannels
@@ -695,63 +629,19 @@ SUBROUTINE WriteOutputEVecProj( Dim, Nx, Inum, NEVals, &
        LiebProb(Lieb_size), LiebPart(Lieb_size), &
        FullPart(Full_size)
 
-  CHARACTER*100 FileName, DirName
-  CHARACTER*1 SymbolCP,symbolLP
-
-  IF(CubeConPot.GE.0.0D0) THEN
-     SymbolCP="+"
-  ELSE
-     SymbolCP="-"
-  END IF
-
-  IF(LiebConPot.GE.0.0D0) THEN
-     SymbolLP="+"
-  ELSE
-     SymbolLP="-"
-  END IF
-
-
+  CHARACTER(len=*) DirName, MiddleName
+  CHARACTER*50 Prefix, Postfix
+  CHARACTER*200 FileName
+  
   PRINT*,"DBG: WriteOutputEvecProj()"
-
   IErr= 0
-
-  !   WRITE out the input parameter
-  WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,A1,I6.6,A3,I6.6,A3,A1,I6.6,A3,I6.6,A2,I5.5,A4)') &
-       "Evec_", "L", Dim, Nx, &
-       "_M",IWidth, &
-       "_Eproj", &! NINT(100.*ABS(Energy)), &
-       "_CP",SymbolCP,NINT(100.*ABS(CubeConPot)), &
-       "_CD", NINT(100.*ABS(CubeDis)), &
-       "_LP", SymbolLP,NINT(100.*ABS(LiebConPot)), &
-       "_LD", NINT(100.*ABS(LiebDis)), "-c",& 
-       PreSeed, ".raw" !"_s", ISSeed,
-    
-!!$  IF(Energy.GE.0.0D0) THEN
-!!$     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A6,I6.6,A6,I6.6,A2,I5.5,A4)') &
-!!$     !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
-!!$          "Evec-","L", Dim, Nx, &
-!!$          "-M", IWidth, &
-!!$          "-Eproj", & !NINT(100.0D0*ABS(Energy)), &
-!!$          "-hD", NINT(100.0D0*ABS(CubeDis)), &
-!!$          "-rD", NINT(100.0D0*ABS(LiebDis)), &
-!!$          "-CubeP", NINT(100.*ABS(CubeConPot)), &
-!!$          "-LP", NINT(100.*ABS(LiebConPot)), &
-!!$          "-c", PreSeed, &! "-N", Inum, & !"_s", ISSeed, 
-!!$          ".raw"
-!!$  ELSE
-!!$     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A6,I6.6,A6,I6.6,A2,I5.5,A4)') &
-!!$     !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
-!!$          "Evec-","L",Dim, Nx, &
-!!$          "-M", IWidth, &
-!!$          "-Eproj", & !NINT(100.0D0*ABS(Energy)), &
-!!$          "-dD", NINT(100.0D0*ABS(CubeDis)), &
-!!$          "-rD", NINT(100.0D0*ABS(LiebDis)), &
-!!$           "-CP", NINT(100.*ABS(CubeConPot)), &
-!!$          "-LP", NINT(100.*ABS(LiebConPot)), &
-!!$          "-c", PreSeed, &! "-N", Inum, & !"_s", ISSeed, 
-!!$          ".raw"
-!!$  ENDIF
-
+  
+  WRITE(Prefix, '(A5)') "Eval_"
+  WRITE(Postfix, '(A2,I5.5,A4)') "-c",  PreSeed, ".raw" 
+  !PRINT*, Prefix, Postfix
+  
+  FileName= TRIM(Prefix)//TRIM(MiddleName)//TRIM(Postfix)
+  
   PRINT*, "WriteOutputEVecProj(): ", FileName
 
   OPEN(UNIT= IChEVec, ERR= 40, STATUS= 'UNKNOWN', FILE=TRIM(ADJUSTL(DirName))//"/"//FileName)

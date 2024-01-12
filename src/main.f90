@@ -437,16 +437,14 @@ PROGRAM LiebExactDiag
            CASE(1)
               PRINT*,"main: DYSEV() eigenvectors will now be saved into individual files"
               DO Inum= 1,NEIG
-                 CALL WriteOutputEVec(Dim, Nx, Inum, NEIG, Lsize, HAMMAT, LSize, &
-                      IWidth, CubeDis, LiebDis, CubeConPot, LiebConPot,&
-                      Seed, dirname, IErr)
+                 CALL WriteOutputEVec(Inum, NEIG, Lsize, HAMMAT, LSize, &
+                      IWidth, Seed, dirname, middlename, IErr)
               END DO
            CASE(2)
               PRINT*,"main: DYSEV() eigenvectors will now be saved into single BULK file"
 
-              CALL WriteOutputEVecBULK(Dim, Nx, Lsize, NEIG, Lsize, EIGS, LSize, &
-                   IWidth, CubeDis, LiebDis, CubeConPot, LiebConPot, &
-                   Seed, dirname, IErr)
+              CALL WriteOutputEVecBULK(NEIG, Lsize, EIGS, LSize, &
+                   IWidth, Seed, dirname, middlename, IErr)
            CASE(-1)
               PRINT*,"main: Cube/Lieb site projections of DYSEV() eigenvectors"
 
@@ -528,14 +526,12 @@ PROGRAM LiebExactDiag
 
               ENDDO
 
-              CALL WriteOutputEVecProj(Dim, Nx, Inum, NEIG, &
+              CALL WriteOutputEVecProj(Inum, NEIG, &
                    EIGS, LSize, &
                    CubeProb, CubePart, Lsize, &
                    LiebProb, LiebPart, LSize, &
                    FullPart, LSize, &
-                   IWidth, CubeDis, LiebDis, &
-                   CubeConPot, LiebConPot, &
-                   Seed, dirname, IErr)
+                   IWidth, Seed, dirname, middlename, IErr)
 
            END SELECT
 
