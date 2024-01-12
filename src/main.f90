@@ -214,7 +214,6 @@ PROGRAM LiebExactDiag
         dirname= middlename
         !PRINT*, middlename
         
-        !CALL MakeDataDir(Dim, Nx, IWidth, CubeDis, LiebDis, CubeConPot, LiebConPot, middlename)
         CALL MakeDataDir(IWidth, dirname, IErr)
 
         ! ----------------------------------------------------------
@@ -261,8 +260,6 @@ PROGRAM LiebExactDiag
            SELECT CASE(IKeepFlag)
            CASE(1)
               CALL CheckOutput( IWidth,Seed, dirname,middlename, IErr )
-              !Dim,Nx, IWidth, CubeDis, LiebDis, &
-              !     CubeConPot, LiebConPot, Seed, middlename, IErr )
               IF(IErr.EQ.2) CYCLE
            END SELECT
 
@@ -285,7 +282,7 @@ PROGRAM LiebExactDiag
            END SELECT
 
            ! ----------------------------------------------------------
-           ! ENTER random values into matrix
+           ! ENTER random values into matrix DIAGONALS
            ! ----------------------------------------------------------
 
            HAMMAT(:,:) = HAMMAT0(:,:)
@@ -305,7 +302,7 @@ PROGRAM LiebExactDiag
               CASE(1) ! +/- CubeConPot on random cube sites
 
                  IF(MOD(n_uc,2) .NE. 0) THEN
-                    PRINT*, "main: WRNG, cube size are odd, so we can not achieve 0 potential!"
+                    PRINT*, "main: WRNG, cube size are odd, so we cannot achieve 0 potential!"
                     PRINT*, "main: WRNG, calculation will proceed, but output is questionable."
                  END IF
 
