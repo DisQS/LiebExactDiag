@@ -546,8 +546,8 @@ SUBROUTINE WriteOutputEVecBULK(NEVals, Lsize, VECS, VECS_size, &
 
   USE MyNumbers
   USE IChannels
-!  USE DPara
-!  USE IPara
+  USE DPara
+  USE IPara
 
   INTEGER(KIND=IKIND) PreSeed, ISSeed, IWidth, IErr, Lsize, VECS_size, NEVals, i,j
 
@@ -577,7 +577,7 @@ SUBROUTINE WriteOutputEVecBULK(NEVals, Lsize, VECS, VECS_size, &
   !DO i= 1+( Lsize*( Inum -1) ), 1+( Lsize*( Inum -1) ) + Lsize
   DO j=1,NEVals
      DO i=1,LSize
-        WRITE(UNIT=IChEVec, FMT=45, ERR=50) j, i, VECS(Inum,i)
+        WRITE(UNIT=IChEVec, FMT=45, ERR=50) j, i, VECS(j,i)
      ENDDO
   END DO
 
@@ -618,14 +618,12 @@ SUBROUTINE WriteOutputEVecProj( Inum, NEVals, &
 
   USE MyNumbers
   USE IChannels
-!  USE DPara
-  !USE IPara
-
+  USE DPara
+  USE IPara
   USE iso_fortran_env, ONLY: output_unit
 
-  INTEGER(KIND=IKIND) Dim, Nx, Inum, PreSeed, ISSeed, IWidth, IErr
+  INTEGER(KIND=IKIND) Inum, PreSeed, ISSeed, IWidth, IErr
   INTEGER(KIND=IKIND) Lsize, Cube_size,Lieb_size,Full_size, NEVals, i,j
-  REAL(KIND=RKIND) CubeDis, LiebDis, CubeConPot, LiebConPot
 
   REAL(KIND=RKIND) EIGS(LSize), &
        CubeProb(Cube_size), CubePart(Cube_size), &

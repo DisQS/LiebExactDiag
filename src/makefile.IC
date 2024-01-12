@@ -15,7 +15,8 @@ F77FLAGS = -C -g +u -r8 -132 -u              # For debugging
 #F77FLAGS = -O2 -r8 -u -132   # For optimizing
 #F77FLAGS = -xpg -C -r8 -Mprof -u                      # For profiling
 
-F90FLAGS = -C -r8 -132 -u -g -check all -fpe0 -warn -traceback -debug extended                # For debugging
+#F90FLAGS = -C -r8 -132 -u -g -check all -fpe0 -warn -traceback -debug extended # For COMPLETE debugging
+F90FLAGS = -C -r8 -132 -u -g -traceback # For regular debugging
 #F90FLAGS = -O2 -r8 -u -132  # For optimizing
 #F90FLAGS = -fast -r8 -C -u -132        # For profiling
 
