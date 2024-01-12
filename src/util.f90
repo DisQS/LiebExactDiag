@@ -251,6 +251,158 @@ SUBROUTINE MakeLiebOnsiteDisorderORIGINAL(dm, nu, n, ucl, n_uc, nt, matr, cubesi
 END SUBROUTINE MakeLiebOnsiteDisorderORIGINAL
 
 !-----------------------------------------------------------------
+SUBROUTINE MakeLiebOnsiteDisorder(dm, nu, n, ucl, n_uc, nt, matr, size, seed)
+
+  USE MyNumbers
+  USE IChannels
+  USE IPara
+  USE DPara
+
+  USE RNG_MT
+
+  IMPLICIT NONE
+
+  INTEGER(KIND=IKIND) &
+       dm, & ! the dimension
+       n, &  ! the number of unit cell in each dimension
+       nu, & ! the number of site in each edge
+       ucl, & ! the number of atoms in a unit cell
+       nt, &  ! the whole number of atoms in system
+       n_uc   ! the number of unit cells
+
+  INTEGER(KIND=IKIND) i, j, k, ind, cubecount,liebcount
+
+  LOGICAL(KIND=8) Flag
+
+  INTEGER(KIND=IKIND), ALLOCATABLE :: ucl_d(:) 
+  REAL(KIND=RKIND) matr(nt, nt)! , matr_W( nt, nt )
+  !INTEGER(KIND=IKIND) cubesites(n_uc), liebsites(nt-n_uc)
+
+  INTEGER seed(5), size, len,col,row 
+  REAL(KIND=RKIND) drandval, SUMCUBErandval,SUMLIEBrandval
+  !EXTERNAL DRANDOM5
+  
+  PRINT*,"MakeLiebOnsiteDisorder()"
+
+  !matr(:,:) = 0.0D0
+
+  ! ----------------------------------------------------------
+  ! Start construction for the DIAGONAL elements of the Lieb Matrix
+  ! ----------------------------------------------------------
+
+  SUMCUBErandval= 0.0D0; SUMLIEBrandval= 0.0D0
+
+  ! Give the Lieb matrix different onsite potentials
+  DO i=1, n_uc
+
+     ! CUBE onsite potentials
+     drandval= DRANDOM5(seed)
+
+     SUMCUBErandval=SUMCUBErandval + CubeDis*(drandval - 0.5D0)
+
+     SELECT CASE (IRNGFlag)
+     CASE(0) ! constant CubeConPot on each cube site
+        matr( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = CubeConPot + CubeDis*(drandval - 0.5D0)
+     CASE(1) ! +/- CubeConPot on random cube sites
+
+        IF(MOD(n_uc,2) .NE. 0) THEN
+           PRINT*, "main: WRNG, cube size is odd, so we cannot achieve 0 SUMMED potential!"
+           PRINT*, "main: WRNG, calculation will proceed, but output is questionable."
+        END IF
+
+        IF(DRANDOM5(seed)>=0.5) THEN
+           matr( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = &
+                CubeConPot + CubeDis*(drandval - 0.5D0)
+        ELSE
+           matr( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = &
+                -CubeConPot + CubeDis*(drandval - 0.5D0)
+        END IF
+
+     CASE(2) ! checkerboard +/- CubeConPot on each cube site
+
+        IF(MOD(n_uc,2) .NE. 0) THEN
+           PRINT*, "main: WRNG, cube size are odd, so we can not achieve 0 potential!"
+           PRINT*, "main: WRNG, calculation will proceed, but output is questionable."
+        END IF
+
+        IF(dm==2)THEN
+
+           len=1
+           IF(MOD(i,size)==0)THEN
+              col=size
+              row=INT(i/size)
+           ELSE
+              col=MOD(i,size)
+              row=INT(i/size)+1
+           END IF
+
+        ELSE IF(Dim==3)THEN
+
+           IF(MOD(i,size**2)==0)THEN
+              col=size
+              row=size
+              len=INT(i/size**2)
+           ELSE
+              IF(MOD(MOD(i,size**2),size)==0)THEN
+                 col=size
+                 row=INT(MOD(i,size**2)/size)
+              ELSE
+                 col=MOD(MOD(i,size**2),size)
+                 row=INT(MOD(i,size**2)/size)+1
+              END IF
+              len=INT(i/size**2)+1
+           END IF
+
+        ELSE
+           PRINT*,"Not finished yet!"
+           STOP
+        END IF
+
+        drandval= DRANDOM5(seed)
+        SUMCUBErandval=SUMCUBErandval + CubeDis*(drandval - 0.5D0)
+
+        IF(MOD(len,2)==1)THEN
+
+           IF((MOD(col,2)==1 .AND. MOD(row,2)==1) .OR. (MOD(col,2)==0 .AND. MOD(row,2)==0))THEN
+              matr( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = CubeConPot + CubeDis*(drandval - 0.5D0)
+           ELSE
+              matr( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = -1.0*CubeConPot + CubeDis*(drandval - 0.5D0)
+           END IF
+
+        ELSE
+           IF((MOD(col,2)==1 .AND. MOD(row,2)==1) .OR. (MOD(col,2)==0 .AND. MOD(row,2)==0))THEN
+              matr( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = -1.0*CubeConPot + CubeDis*(drandval - 0.5D0)
+           ELSE
+              matr( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = CubeConPot + CubeDis*(drandval - 0.5D0)
+           END IF
+
+        END IF
+
+     END SELECT
+
+     ! LIEB onsite potentials
+     DO j=1, ucl-1
+
+        drandval= DRANDOM5(seed)
+        SUMLIEBrandval=SUMLIEBrandval + LiebDis*(drandval - 0.5D0)
+        matr((i-1)*ucl + j + 1 , (i-1)*ucl + j + 1) = LiebConPot + LiebDis*(drandval - 0.5D0)
+
+     END DO
+
+  END DO
+
+  ! ----------------------------------------------------------
+  ! WRITE SUMrandval to allow identification of accidental states
+  ! ----------------------------------------------------------
+
+  PRINT*,"MakeLiebOnsiteDisorder(): Seed=", seed, ", SHrv=", SUMCUBErandval/n_uc, &
+       ", SRrv=", SUMLIEBrandval/n_uc
+
+  RETURN
+
+END SUBROUTINE MakeLiebOnsiteDisorder
+
+!-----------------------------------------------------------------
 SUBROUTINE MakeLiebHoppingDisorder(dm, nu, n, ucl, n_uc, nt, matr, cubesites, liebsites)
 
   USE MyNumbers
