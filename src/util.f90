@@ -7,6 +7,7 @@
 ! see https://github.com/DisQS/LiebExactDiag
 !-----------------------------------------------------------------
 
+!-----------------------------------------------------------------
 SUBROUTINE MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr, cubesites, liebsites)
 
   USE MyNumbers
@@ -161,7 +162,8 @@ SUBROUTINE MakeLiebMatrixStructrue(dm, nu, n, ucl, n_uc, nt, matr, cubesites, li
 
 END SUBROUTINE MakeLiebMatrixStructrue
 
-SUBROUTINE MakeLiebOnsiteDisorder(dm, nu, n, ucl, n_uc, nt, matr, cubesites, liebsites)
+!-----------------------------------------------------------------
+SUBROUTINE MakeLiebOnsiteDisorderORIGINAL(dm, nu, n, ucl, n_uc, nt, matr, cubesites, liebsites)
 
   USE MyNumbers
   USE IChannels
@@ -184,7 +186,7 @@ SUBROUTINE MakeLiebOnsiteDisorder(dm, nu, n, ucl, n_uc, nt, matr, cubesites, lie
   REAL(KIND=RKIND) matr(nt, nt)! , matr_W( nt, nt )
   INTEGER(KIND=IKIND) cubesites(n_uc), liebsites(nt-n_uc)
   
-  PRINT*,"MakeLiebOnsiteDisorder()"
+  PRINT*,"MakeLiebOnsiteDisorderORIGINAL()"
 
   !matr(:,:) = 0.0D0
 
@@ -246,8 +248,9 @@ SUBROUTINE MakeLiebOnsiteDisorder(dm, nu, n, ucl, n_uc, nt, matr, cubesites, lie
 
   RETURN
 
-END SUBROUTINE MakeLiebOnsiteDisorder
+END SUBROUTINE MakeLiebOnsiteDisorderORIGINAL
 
+!-----------------------------------------------------------------
 SUBROUTINE MakeLiebHoppingDisorder(dm, nu, n, ucl, n_uc, nt, matr, cubesites, liebsites)
 
   USE MyNumbers
