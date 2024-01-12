@@ -210,90 +210,178 @@ END SUBROUTINE Input
 ! IErr	error code
 !----------------------------------------------------------------------
 
-FUNCTION GetFileName(fnamestr,vdata,n)
+!!$FUNCTION GetFileName(fnamestr,vdata,n)
+!!$!write(*,*) trim(GetFileName('/Output/QH_L(I4)_NL(I1)_NS(I1)_B(F5.3)_C(F4.2)_S(I5).dat',&
+!!$!     (/L_INPUT,NLevels,NSpins,BField,Coul,Seed/),6))
+!!$
+!!$  IMPLICIT NONE
+!!$
+!!$  INTEGER,INTENT(in)         :: n
+!!$  REAL(8),INTENT(in)         :: vdata(n)
+!!$  CHARACTER(len=*),INTENT(in) :: fnamestr
+!!$
+!!$  CHARACTER(len=*)   :: GetFileName
+!!$  CHARACTER(len=500) :: str,fstr,vstr
+!!$  
+!!$  INTEGER           :: i
+!!$
+!!$  str = fnamestr
+!!$  
+!!$  DO i=1,n
+!!$     
+!!$     fstr = str(INDEX(str,'('):INDEX(str,')'))
+!!$     IF(fstr(2:2).EQ.'I')THEN
+!!$        WRITE(vstr,fstr) INT(vdata(i))
+!!$     ELSE
+!!$        WRITE(vstr,fstr) vdata(i)
+!!$     END IF
+!!$  
+!!$     str = str(1:INDEX(str,'(')-1) // TRIM(ADJUSTL(vstr)) // str(INDEX(str,')')+1:LEN(str)) 
+!!$     
+!!$  END DO
+!!$  
+!!$  GetFileName = TRIM(ADJUSTL(str))
+!!$
+!!$  RETURN
+!!$END FUNCTION GetFileName
+
+!--------------------------------------------------------------------
+! MakeMiddleName
+!
+! IErr	error code
+
+FUNCTION MakeMiddleName(IWidth, IErr)
 !write(*,*) trim(GetFileName('/Output/QH_L(I4)_NL(I1)_NS(I1)_B(F5.3)_C(F4.2)_S(I5).dat',&
 !     (/L_INPUT,NLevels,NSpins,BField,Coul,Seed/),6))
 
+  USE MyNumbers
+  USE IPara
+  USE DPara
+
   IMPLICIT NONE
 
-  INTEGER,INTENT(in)         :: n
-  REAL(8),INTENT(in)         :: vdata(n)
-  CHARACTER(len=*),INTENT(in) :: fnamestr
+  CHARACTER*200          :: MakeMiddleName
+  INTEGER, INTENT(in)    :: IWidth
+  INTEGER, INTENT(inout) :: IErr
+  CHARACTER*200 middlenamestr, mnstr1, mnstr2, mnstr3
+  CHARACTER*1 SymbolCP,symbolLP
+  
+  PRINT*,"DBG: MakeMiddleName()"
 
-  CHARACTER(len=*)   :: GetFileName
-  CHARACTER(len=500) :: str,fstr,vstr
-  
-  INTEGER           :: i
+  IErr= 0
 
-  str = fnamestr
+  IF(CubeConPot.GE.0.0D0) THEN
+     SymbolCP="+"
+  ELSE
+     SymbolCP="-"
+  END IF
+
+  IF(LiebConPot.GE.0.0D0) THEN
+     SymbolLP="+"
+  ELSE
+     SymbolLP="-"
+  END IF
+
+  !   WRITE out the input parameter
+  WRITE(mnstr1, &
+   '(A1,I1,I1,A2,I4.4,A3)') &
+       "L", Dim, Nx, &
+       "_M", IWidth, &
+       "_Es"
   
-  DO i=1,n
-     
-     fstr = str(INDEX(str,'('):INDEX(str,')'))
-     IF(fstr(2:2).EQ.'I')THEN
-        WRITE(vstr,fstr) INT(vdata(i))
-     ELSE
-        WRITE(vstr,fstr) vdata(i)
-     END IF
+  WRITE(mnstr2, &
+   '(A3,A1,I6.6,A3,I6.6,A3,A1,I6.6,A3,I6.6)') &
+       "_CP", SymbolCP,NINT(100.*ABS(CubeConPot)), &
+       "_CD", NINT(100.*ABS(CubeDis)), &
+       "_LP", SymbolLP,NINT(100.*ABS(LiebConPot)), &
+       "_LD", NINT(100.*ABS(LiebDis)) 
   
-     str = str(1:INDEX(str,'(')-1) // TRIM(ADJUSTL(vstr)) // str(INDEX(str,')')+1:LEN(str)) 
-     
-  END DO
+  WRITE(mnstr3, &
+   '(A4,I6.6,A4,I6.6,A4,I6.6,A4,I6.6)') &
+       "_oCS", NINT(100.*ABS(CubeShiftOD)), &
+       "_oCD", NINT(100.*ABS(CubeDisOD)), &
+       "_oLS", NINT(100.*ABS(LiebDisOD)), &
+       "_oLD", NINT(100.*ABS(LiebDisOD))
   
-  GetFileName = TRIM(ADJUSTL(str))
+!!$  PRINT*, TRIM(mnstr1)
+!!$  PRINT*, TRIM(mnstr2)
+!!$  PRINT*, TRIM(mnstr3)
+  middlenamestr= TRIM(mnstr1) // TRIM(mnstr2) // TRIM(mnstr3)
+  
+  MakeMiddleName = TRIM(ADJUSTL(middlenamestr))
 
   RETURN
-END FUNCTION GetFileName
+END FUNCTION MakeMiddleName
+
+!--------------------------------------------------------------------
+! MakeDataDir:
+!
+! IErr	error code
+
+!!$SUBROUTINE MakeDataDir(Dim, Nx, Width, CubeDis, LiebDis, CubeConPot, LiebConPot, str)
+SUBROUTINE MakeDataDir(IWidth, dirname, IErr)
+
+  USE MyNumbers
+  USE IPara
+  USE DPara
+
+  INTEGER IWidth, IErr
+  CHARACTER(len=*) dirname
+  !CHARACTER*200 MakeDataDir
+
+  LOGICAL*4  ierr1
+  EXTERNAL SYSTEM
+  
+  PRINT*, "MakeDataDir(): checking for ", TRIM(dirname)
+
+#ifdef ifort
+  INQUIRE(directory=TRIM(ADJUSTL(dirname)), Exist=ierr1) ! ifort
+#else
+  INQUIRE(file=TRIM(ADJUSTL(dirname)), Exist=ierr1) ! gfortran
+#endif
+  IF(ierr1)THEN
+     PRINT*,"MakeDataDir(): using existing directory ", TRIM(ADJUSTL(dirname))
+     !WRITE(*,'(/)')
+  ELSE
+     PRINT*,"MakeDataDir(): creating NEW directory ", TRIM(ADJUSTL(dirname))
+     !WRITE(*,'(/)')
+     CALL System("mkdir -p "//TRIM(ADJUSTL(dirname)) )
+  END IF
+
+  RETURN
+  
+END SUBROUTINE MakeDataDir
 
 !--------------------------------------------------------------------
 ! CheckOutput:
 !
 ! IErr	error code
 
-SUBROUTINE CheckOutput( Dim, Nx, IWidth, CubeDis, LiebDis, CubeConPot, LiebConPot, PreSeed, str, IErr )
+SUBROUTINE CheckOutput( IWidth, PreSeed, DirName, MiddleName, IErr )
+  !Dim, Nx, IWidth, CubeDis, LiebDis, CubeConPot, LiebConPot, PreSeed, str, IErr )
 
   USE MyNumbers 
   USE IChannels
-!  USE DPara
-!  USE IPara
+  USE IPara
+  USE DPara
 
+  INTEGER(KIND=IKIND) IWidth, PreSeed, IErr
+  CHARACTER(len=*) DirName, MiddleName
   
-  INTEGER(KIND=IKIND) Dim, Nx, IWidth, IErr, PreSeed, ISSeed
-  REAL(KIND=RKIND) CubeDis, LiebDis, CubeConPot, LiebConPot
-  
-  CHARACTER*100 FileName, str
-  CHARACTER*1 SymbolCP,symbolLP
+  CHARACTER*50 Prefix, Postfix
+  CHARACTER*200 FileName
 
-  IF(CubeConPot.GE.0.0D0) Then
-     SymbolCP="+"
-  Else
-     SymbolCP="-"
-  End If
-
-  If(LiebConPot.GE.0.0D0) Then
-     SymbolLP="+"
-  Else
-     SymbolLP="-"
-  End If
-  
-  
   PRINT*,"DBG: CheckOutput()"
+!  IErr= 0
 
-  IErr= 0
+  WRITE(Prefix, '(A5)') "Eval_"
+  WRITE(Postfix, '(A2,I5.5,A4)') "-c",  PreSeed, ".raw" 
+  !PRINT*, Prefix, Postfix
   
-  !   WRITE out the input parameter
-  WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,A1,I6.6,A3,I6.6,A3,A1,I6.6,A3,I6.6,A2,I5.5,A4)') &
-       "Eval_", "L", Dim, Nx, &
-       "_M",IWidth, &
-       "_Espec", &! NINT(100.*ABS(Energy)), &
-       "_CP",SymbolCP,NINT(100.*ABS(CubeConPot)), &
-       "_CD", NINT(100.*ABS(CubeDis)), &
-       "_LP", SymbolLP,NINT(100.*ABS(LiebConPot)), &
-       "_LD", NINT(100.*ABS(LiebDis)), "-c",& 
-       PreSeed, ".raw" !"_s", ISSeed, 
-
-     
-  OPEN(UNIT= IChOut, ERR= 10, STATUS= 'NEW', FILE= TRIM(ADJUSTL(str))//"/"//FileName)
+  FileName= TRIM(Prefix)//TRIM(MiddleName)//TRIM(Postfix)
+  !PRINT*, FileName
+  
+  OPEN(UNIT= IChOut, ERR= 10, STATUS= 'NEW', FILE= TRIM(ADJUSTL(DirName))//"/"//FileName)
   !PRINT*, "CheckOutput(): ", TRIM(FileName), "DOES NOT exist -- proceeding!"
   WRITE(*,'(A16,A54,A31)') "CheckOutput(): ", &
        TRIM(FileName), " DOES NOT exist -- proceeding!"
@@ -325,72 +413,40 @@ END SUBROUTINE CheckOutput
 !
 ! IErr	error code
 
-SUBROUTINE WriteOutputEVal(Dim, Nx, NEVals, EIGS, IWidth, &
-     CubeDis, LiebDis, CubeConPot, LiebConPot, PreSeed, str, IErr)
+SUBROUTINE WriteOutputEVal(NEVals,EIGS, IWidth,PreSeed, DirName,MiddleName, IErr)
 
   USE MyNumbers
   USE IChannels
-!  USE DPara
-!  USE IPara
+  USE DPara
+  USE IPara
 
-  INTEGER(KIND=IKIND) Dim, Nx
-  INTEGER(KIND=IKIND) IWidth, IErr, NEVals, PreSeed, ISSeed, i
-  REAL(KIND=RKIND) CubeDis, LiebDis, CubeConPot, LiebConPot
+  INTEGER(KIND=IKIND) NEVals, IWidth, IErr, PreSeed, i
   REAL(KIND=RKIND) EIGS(NEVals)
-  
-  CHARACTER*100 FileName, str
-  CHARACTER*1 SymbolCP,symbolLP
 
-  IF(CubeConPot.GE.0.0D0) Then
-     SymbolCP="+"
-  Else
-     SymbolCP="-"
-  End If
+  CHARACTER(len=*) DirName, MiddleName
+  CHARACTER*50 Prefix, Postfix
+  CHARACTER*200 FileName
 
-  If(LiebConPot.GE.0.0D0) Then
-     SymbolLP="+"
-  Else
-     SymbolLP="-"
-  End If
-
-  
   PRINT*,"DBG: WriteOutputEVal()"
-  
   IErr= 0
-  
-  !   WRITE out the input parameter
-  WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,A1,I6.6,A3,I6.6,A3,A1,I6.6,A3,I6.6,A2,I5.5,A4)') &
-       "Eval_", "L", Dim, Nx, &
-       "_M",IWidth, &
-       "_Espec", &! NINT(100.*ABS(Energy)), &
-       "_CP",SymbolCP,NINT(100.*ABS(CubeConPot)), &
-       "_CD", NINT(100.*ABS(CubeDis)), &
-       "_LP", SymbolLP,NINT(100.*ABS(LiebConPot)), &
-       "_LD", NINT(100.*ABS(LiebDis)), "-c",& 
-       PreSeed, ".raw" !"_s", ISSeed, 
 
+  WRITE(Prefix, '(A5)') "Eval_"
+  WRITE(Postfix, '(A2,I5.5,A4)') "-c",  PreSeed, ".raw" 
+  !PRINT*, Prefix, Postfix
   
-!!$  WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A6,I6.6,A6,I6.6,A2,I5.5,A4)') &
-!!$       "Eval-", "L", Dim, Nx, &
-!!$       "-M",IWidth, &
-!!$       "-Espec", & !NINT(100.*ABS(Energy)), &
-!!$       "-hD", NINT(100.*ABS(CubeDis)), &
-!!$       "-rD", NINT(100.*ABS(LiebDis)), &
-!!$       "-CP", NINT(100.*ABS(CubeConPot)), &
-!!$       "-LP", NINT(100.*ABS(LiebConPot)), "-c",& 
-!!$       PreSeed, ".raw" !"_s", ISSeed, 
-  
+  FileName= TRIM(Prefix)//TRIM(MiddleName)//TRIM(Postfix)
+  !PRINT*, FileName
+
 !  IF(IWriteFlag.GE.2) THEN
      PRINT*, "WriteOutputEVal(): ", FileName
 !  ENDIF
   
-!!$  OPEN(UNIT= IChEVal, ERR= 10, STATUS='UNKNOWN', FILE=Trim(str)//"/"//FileName)  
-  
-  OPEN(UNIT= IChEVal, ERR= 10, STATUS='UNKNOWN', FILE= TRIM(ADJUSTL(str))//"/"//FileName)
+  OPEN(UNIT= IChEVal, ERR= 10, STATUS='UNKNOWN', FILE= TRIM(ADJUSTL(DirName))//"/"//FileName)
   
   IF(NEVals .GT. 0)THEN
      DO i=1,NEVals
         WRITE(IChEVal, FMT=15, ERR=20) EIGS(i)
+15      FORMAT(f30.20)
      ENDDO
   END IF
   
@@ -398,8 +454,6 @@ SUBROUTINE WriteOutputEVal(Dim, Nx, NEVals, EIGS, IWidth, &
   
   RETURN
   
-15 FORMAT(f30.20)
-
   !	error in OPEN detected
 10 PRINT*, "WriteOutputEVal(): ERR in OPEN()"
   IErr= 1
@@ -425,7 +479,7 @@ END SUBROUTINE WriteOutputEVal
 
 SUBROUTINE WriteOutputEVec( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
      IWidth, CubeDis, LiebDis, CubeConPot, LiebConPot, &
-     PreSeed, str, IErr)
+     PreSeed, DirName, IErr)
 
   USE MyNumbers
   USE IChannels
@@ -438,27 +492,25 @@ SUBROUTINE WriteOutputEVec( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
 
   REAL(KIND=RKIND) VECS(VECS_size,VECS_size)
 
-  CHARACTER*100 FileName, str
+  CHARACTER*100 FileName, DirName
   CHARACTER*1 SymbolCP,symbolLP
-
-  IF(CubeConPot.GE.0.0D0) Then
-     SymbolCP="+"
-  Else
-     SymbolCP="-"
-  End If
-
-  If(LiebConPot.GE.0.0D0) Then
-     SymbolLP="+"
-  Else
-     SymbolLP="-"
-  End If
-
 
   
 !!$  PRINT*,"DBG: WriteOutputEvec()"
 
   IErr= 0
 
+  IF(CubeConPot.GE.0.0D0) THEN
+     SymbolCP="+"
+  ELSE
+     SymbolCP="-"
+  END IF
+
+  IF(LiebConPot.GE.0.0D0) THEN
+     SymbolLP="+"
+  ELSE
+     SymbolLP="-"
+  END IF
   !   WRITE out the input parameter
   WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,A1,I6.6,A3,I6.6,A3,A1,I6.6,A3,I6.6,A2,I5.5,A2,I6.6,A4)') &
        "Evec_", "L", Dim, Nx, &
@@ -470,35 +522,9 @@ SUBROUTINE WriteOutputEVec( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
        "_LD", NINT(100.*ABS(LiebDis)), "-c",& 
        PreSeed, "-N", Inum, ".raw" !"_s", ISSeed, 
 
-!!$  IF(Energy.GE.0.0D0) THEN
-!!$     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A6,I6.6,A6,I6.6,A2,I5.5,A2,I4.4,A4)') &
-!!$     !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
-!!$          "Evec-","L", Dim, Nx, &
-!!$          "-M", IWidth, &
-!!$          "-Espec", & !NINT(100.0D0*ABS(Energy)), &
-!!$          "-hD", NINT(100.0D0*ABS(CubeDis)), &
-!!$          "-rD", NINT(100.0D0*ABS(LiebDis)), &
-!!$          "-CP", NINT(100.*ABS(CubeConPot)), &
-!!$          "-LP", NINT(100.*ABS(LiebConPot)), &
-!!$          "-c", PreSeed, "-N", Inum, & !"_s", ISSeed, 
-!!$          ".raw"
-!!$  ELSE
-!!$     WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,I6.6,A3,I6.6,A6,I6.6,A6,I6.6,A2,I5.5,A2,I4.4,A4)') &
-!!$     !WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A2,A5,I9.9,A7,I7.7,A7,I7.7,A2,I4.4,A1,I5.5,A4)') &
-!!$          "Evec-","L",Dim, Nx, &
-!!$          "-M", IWidth, &
-!!$          "-Espec", & !NINT(100.0D0*ABS(Energy)), &
-!!$          "-dD", NINT(100.0D0*ABS(CubeDis)), &
-!!$          "-rD", NINT(100.0D0*ABS(LiebDis)), &
-!!$          "-CP", NINT(100.*ABS(CubeConPot)), &
-!!$          "-LP", NINT(100.*ABS(LiebConPot)), &
-!!$          "-c", PreSeed, "-N", Inum, & !"_s", ISSeed, 
-!!$          ".raw"
-!!$  ENDIF
-
 !!$  PRINT*, "WriteOutputEVec(): ", FileName
 
-  OPEN(UNIT= IChEVec, ERR= 40, STATUS= 'UNKNOWN', FILE=TRIM(ADJUSTL(str))//"/"//FileName)
+  OPEN(UNIT= IChEVec, ERR= 40, STATUS= 'UNKNOWN', FILE=TRIM(ADJUSTL(DirName))//"/"//FileName)
 
   !DO i= 1+( Lsize*( Inum -1) ), 1+( Lsize*( Inum -1) ) + Lsize
   DO i=1,LSize
@@ -535,7 +561,7 @@ END SUBROUTINE WriteOutputEVec
 
 SUBROUTINE WriteOutputEVecBULK( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
      IWidth, CubeDis, LiebDis, CubeConPot, LiebConPot, &
-     PreSeed, str, IErr)
+     PreSeed, DirName, IErr)
 
   USE MyNumbers
   USE IChannels
@@ -548,20 +574,20 @@ SUBROUTINE WriteOutputEVecBULK( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
 
   REAL(KIND=RKIND) VECS(VECS_size,VECS_size)
 
-  CHARACTER*100 FileName, str
+  CHARACTER*100 FileName, DirName
   CHARACTER*1 SymbolCP,symbolLP
 
-  IF(CubeConPot.GE.0.0D0) Then
+  IF(CubeConPot.GE.0.0D0) THEN
      SymbolCP="+"
-  Else
+  ELSE
      SymbolCP="-"
-  End If
+  END IF
 
-  If(LiebConPot.GE.0.0D0) Then
+  IF(LiebConPot.GE.0.0D0) THEN
      SymbolLP="+"
-  Else
+  ELSE
      SymbolLP="-"
-  End If
+  END IF
 
 
   PRINT*,"DBG: WriteOutputEvecBULK()"
@@ -607,7 +633,7 @@ SUBROUTINE WriteOutputEVecBULK( Dim, Nx, Inum, NEVals, Lsize, VECS, VECS_size, &
 
   PRINT*, "WriteOutputEVecBULK(): ", FileName
 
-  OPEN(UNIT= IChEVec, ERR= 40, STATUS= 'UNKNOWN', FILE=TRIM(ADJUSTL(str))//"/"//FileName)
+  OPEN(UNIT= IChEVec, ERR= 40, STATUS= 'UNKNOWN', FILE=TRIM(ADJUSTL(DirName))//"/"//FileName)
 
   !DO i= 1+( Lsize*( Inum -1) ), 1+( Lsize*( Inum -1) ) + Lsize
   DO j=1,Inum
@@ -651,7 +677,7 @@ SUBROUTINE WriteOutputEVecProj( Dim, Nx, Inum, NEVals, &
      FullPart, Full_size, &
      IWidth, CubeDis, LiebDis, &
      CubeConPot, LiebConPot, &
-     PreSeed, str, IErr)
+     PreSeed, DirName, IErr)
 
   USE MyNumbers
   USE IChannels
@@ -669,28 +695,25 @@ SUBROUTINE WriteOutputEVecProj( Dim, Nx, Inum, NEVals, &
        LiebProb(Lieb_size), LiebPart(Lieb_size), &
        FullPart(Full_size)
 
-  CHARACTER*100 FileName, str
+  CHARACTER*100 FileName, DirName
   CHARACTER*1 SymbolCP,symbolLP
 
-  IF(CubeConPot.GE.0.0D0) Then
+  IF(CubeConPot.GE.0.0D0) THEN
      SymbolCP="+"
-  Else
+  ELSE
      SymbolCP="-"
-  End If
+  END IF
 
-  If(LiebConPot.GE.0.0D0) Then
+  IF(LiebConPot.GE.0.0D0) THEN
      SymbolLP="+"
-  Else
+  ELSE
      SymbolLP="-"
-  End If
+  END IF
 
 
   PRINT*,"DBG: WriteOutputEvecProj()"
 
   IErr= 0
-
-
-  
 
   !   WRITE out the input parameter
   WRITE(FileName, '(A5,A1,I1,I1,A2,I4.4,A6,A3,A1,I6.6,A3,I6.6,A3,A1,I6.6,A3,I6.6,A2,I5.5,A4)') &
@@ -731,7 +754,7 @@ SUBROUTINE WriteOutputEVecProj( Dim, Nx, Inum, NEVals, &
 
   PRINT*, "WriteOutputEVecProj(): ", FileName
 
-  OPEN(UNIT= IChEVec, ERR= 40, STATUS= 'UNKNOWN', FILE=TRIM(ADJUSTL(str))//"/"//FileName)
+  OPEN(UNIT= IChEVec, ERR= 40, STATUS= 'UNKNOWN', FILE=TRIM(ADJUSTL(DirName))//"/"//FileName)
 
   !DO i= 1+( Lsize*( Inum -1) ), 1+( Lsize*( Inum -1) ) + Lsize
   DO Inum=1,Cube_size
@@ -766,71 +789,6 @@ SUBROUTINE WriteOutputEVecProj( Dim, Nx, Inum, NEVals, &
 
 END SUBROUTINE WriteOutputEVecProj
 
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Create Folder !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-SUBROUTINE GetDirec(Dim, Nx, Width, CubeDis, LiebDis, CubeConPot, LiebConPot, str)
-  USE MyNumbers
-
-  INTEGER*4 Dim, Nx, Width, Seed
-  REAL*8 CubeDis, LiebDis, CubeConPot, LiebConPot
-  CHARACTER(len=100) str
-  CHARACTER(len=10) fid1, fid2, fid3, fid4, fid5, fid6, fid7
-  LOGICAL*4 ierr1
-  CHARACTER*1 SymbolCP,symbolLP
-
-  IF(CubeConPot.GE.0.0D0) Then
-     SymbolCP="+"
-  Else
-     SymbolCP="-"
-  End If
-
-  If(LiebConPot.GE.0.0D0) Then
-     SymbolLP="+"
-  Else
-     SymbolLP="-"
-  End If
-
-  PRINT*, "GetDirec(): ", Dim, Nx, Width, CubeDis, LiebDis
-
-  WRITE(fid1,'(I1)') Dim; fid1=TRIM(ADJUSTL(fid1))
-  WRITE(fid2,'(I1)') Nx; fid2=TRIM(ADJUSTL(fid2))
-  WRITE(fid3,'(I3)') Width; fid3=TRIM(ADJUSTL(fid3))
-  WRITE(fid4,'(I6.6)') NINT(CubeDis*100.); fid4=TRIM(ADJUSTL(fid4))
-  WRITE(fid5,'(I6.6)') NINT(LiebDis*100.); fid5=TRIM(ADJUSTL(fid5))
-  WRITE(fid6,'(I6.6)') NINT(ABS(CubeConPot)*100.); fid6=TRIM(ADJUSTL(fid6))
-  WRITE(fid7,'(I6.6)') NINT(ABS(LiebConPot)*100.); fid7=TRIM(ADJUSTL(fid7))
-  !WRITE(fid6,'(I4.4)') Seed
-  !WRITE(fid6,'(I6.6)') NINT(ABS(Energy)*100.); fid6=TRIM(ADJUSTL(fid6))
-
- str='L'//TRIM(fid1)//TRIM(fid2)//'_M'//TRIM(fid3)//'_CP'//TRIM(SymbolCP)//TRIM(fid6)//'_CD'//TRIM(fid4) &
-          //'_LP'//TRIM(SymbolLP)//TRIM(fid7)//'_LD'//TRIM(fid5)!//"_E"//TRIM(fid6)!//'_DATA'
-  
-
-!  Write(str,'(A1,I1,I1,A2,I3.1,A7,f6.1,A7,f6.1,A6)') &
-!       "L", Dim, Nx, "_M", Width, "_CubeDis", CubeDis, &
-!       "_LiebDis", LiebDis, "_.DATA"
-
-!!$  PRINT*,str
-  PRINT*, "GetDirec(): checking for ", str, Dim, Nx, Width, CubeDis, LiebDis, CubeConPot, LiebConPot
-
-#ifdef ifort
-  INQUIRE(directory=TRIM(ADJUSTL(str)), Exist=ierr1) ! ifort
-#else
-  INQUIRE(file=TRIM(ADJUSTL(str)), Exist=ierr1) ! gfortran
-#endif
-  IF(ierr1)THEN
-     PRINT*,"GetDirec(): using existing directory ", TRIM(ADJUSTL(str))
-     !WRITE(*,'(/)')
-  ELSE
-     PRINT*,"GetDirec(): creating NEW directory ", TRIM(ADJUSTL(str))
-     !WRITE(*,'(/)')
-     CALL System("mkdir -p "//TRIM(ADJUSTL(str)) )
-  END IF
-  
-  RETURN
-  
-END SUBROUTINE GetDirec
 
 
 

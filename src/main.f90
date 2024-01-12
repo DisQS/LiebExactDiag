@@ -69,7 +69,7 @@ PROGRAM LiebExactDiag
   REAL(KIND=RKIND) drandval,SUMHUBrandval,SUMRIMrandval, CubeNorm,LiebNorm
   REAL(KIND=RKIND),ALLOCATABLE :: norm(:), part_nr(:)
 
-  CHARACTER*100 str
+  CHARACTER*200 middlename, MakeMiddleName, dirname
 
   ! ----------------------------------------------------------
   ! start of main code
@@ -90,7 +90,7 @@ PROGRAM LiebExactDiag
   ! inout handling
   ! ----------------------------------------------------------
 
-  CALL  Input(IErr)
+  CALL Input(IErr)
   IF(IErr.NE.0) THEN
      PRINT*,"main: Input() finds IErr=", IErr
      STOP
@@ -205,30 +205,41 @@ PROGRAM LiebExactDiag
         CASE(6)
            LiebDisOD=flux
         END SELECT
-        
-        CALL GetDirec(Dim, Nx, IWidth, CubeDis, LiebDis, CubeConPot, LiebConPot, str)
 
+        ! ----------------------------------------------------------
+        ! generate filename templates and data directory
+        ! ----------------------------------------------------------
+
+        middlename= TRIM(MakeMiddleName( IWidth, IErr ) )
+        dirname= middlename
+        !PRINT*, middlename
+        
+        !CALL MakeDataDir(Dim, Nx, IWidth, CubeDis, LiebDis, CubeConPot, LiebConPot, middlename)
+        CALL MakeDataDir(IWidth, dirname, IErr)
+
+        ! ----------------------------------------------------------
+        ! main loop over samples
+        ! ----------------------------------------------------------
+        
         DO Seed=ISeed, ISeed+NSeed-1
 
            ! ----------------------------------------------------------
-           ! Compute actual seed
+           ! Compute seed specific for chosen parameters
            ! ----------------------------------------------------------
 
            !CALL SRANDOM(Seed)
 
            ISSeed(1)= Seed
            ISSeed(2)= IWidth
-           ISSeed(3)= NINT(CubeDis*1000.) ! in lieu of "Energy"
-           ISSeed(4)= NINT(CubeDis*1000.)
-           ISSeed(5)= NINT(LiebDis*1000.)
-
-           !           CALL genrand_int31(ISSeed) ! MT95 with 5 seeds
+           ISSeed(3)= NINT(CubeConPot*1000.) + NINT(CubeShiftOD*10000.) + NINT(LiebShiftOD*10000.) ! in lieu of "Energy"
+           ISSeed(4)= NINT(CubeDis*1000.) + NINT(CubeDisOD*10000.)
+           ISSeed(5)= NINT(LiebDis*1000.) + NINT(LiebDisOD*10000.)
 
            SELECT CASE(IWriteFlag)
-           CASE(1,2)
+           CASE(1,2 )! showing seeds constructed
               PRINT*, "--> Seed=", Seed
               PRINT*, "--> ISSeed=", ISSeed
-           CASE(3,4)
+           CASE(3,4) ! for testing seed construction
 !!$              PRINT*, "IS: IW=", IWidth, "hD=", NINT(CubeDis*1000.), "E=", NINT(Energy*1000.), &
 !!$                   "S=", Seed, "IS=", ISSeed
               CALL genrand_int31(ISSeed) ! MT95 with 5 seeds
@@ -249,8 +260,9 @@ PROGRAM LiebExactDiag
 
            SELECT CASE(IKeepFlag)
            CASE(1)
-              CALL CheckOutput( Dim,Nx, IWidth, CubeDis, LiebDis, &
-                   CubeConPot, LiebConPot, Seed, str, IErr )
+              CALL CheckOutput( IWidth,Seed, dirname,middlename, IErr )
+              !Dim,Nx, IWidth, CubeDis, LiebDis, &
+              !     CubeConPot, LiebConPot, Seed, middlename, IErr )
               IF(IErr.EQ.2) CYCLE
            END SELECT
 
@@ -417,8 +429,7 @@ PROGRAM LiebExactDiag
 
            NEIG=LSize ! this is complete diagonalization
 
-           CALL WriteOutputEVal( Dim, Nx, NEIG, EIGS, IWidth, &
-                CubeDis, LiebDis, CubeConPot, LiebConPot, Seed, str, IErr)
+           CALL WriteOutputEVal(NEIG, EIGS, IWidth, Seed, dirname, middlename, IErr)
 
            SELECT CASE(IStateFlag)
            CASE(0)
@@ -428,14 +439,14 @@ PROGRAM LiebExactDiag
               DO Inum= 1,NEIG
                  CALL WriteOutputEVec(Dim, Nx, Inum, NEIG, Lsize, HAMMAT, LSize, &
                       IWidth, CubeDis, LiebDis, CubeConPot, LiebConPot,&
-                      Seed, str, IErr)
+                      Seed, dirname, IErr)
               END DO
            CASE(2)
               PRINT*,"main: DYSEV() eigenvectors will now be saved into single BULK file"
 
               CALL WriteOutputEVecBULK(Dim, Nx, Lsize, NEIG, Lsize, EIGS, LSize, &
                    IWidth, CubeDis, LiebDis, CubeConPot, LiebConPot, &
-                   Seed, str, IErr)
+                   Seed, dirname, IErr)
            CASE(-1)
               PRINT*,"main: Cube/Lieb site projections of DYSEV() eigenvectors"
 
@@ -524,7 +535,7 @@ PROGRAM LiebExactDiag
                    FullPart, LSize, &
                    IWidth, CubeDis, LiebDis, &
                    CubeConPot, LiebConPot, &
-                   Seed, str, IErr)
+                   Seed, dirname, IErr)
 
            END SELECT
 
