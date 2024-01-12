@@ -24,7 +24,6 @@ SUBROUTINE Input(IErr)
   USE DPara
   
   USE IChannels
-
   
   INTEGER IErr, ILine
 !  REAL(KIND=RKIND) RIter
@@ -427,7 +426,7 @@ SUBROUTINE WriteOutputEVal(NEVals,EIGS, IWidth,PreSeed, DirName,MiddleName, IErr
   CHARACTER*50 Prefix, Postfix
   CHARACTER*200 FileName
 
-  PRINT*,"DBG: WriteOutputEVal()"
+!!$  PRINT*,"DBG: WriteOutputEVal()"
   IErr= 0
 
   WRITE(Prefix, '(A5)') "Eval_"
@@ -437,9 +436,9 @@ SUBROUTINE WriteOutputEVal(NEVals,EIGS, IWidth,PreSeed, DirName,MiddleName, IErr
   FileName= TRIM(Prefix)//TRIM(MiddleName)//TRIM(Postfix)
   !PRINT*, FileName
 
-!  IF(IWriteFlag.GE.2) THEN
+  IF(IWriteFlag.GE.2) THEN
      PRINT*, "WriteOutputEVal(): ", FileName
-!  ENDIF
+  ENDIF
   
   OPEN(UNIT= IChEVal, ERR= 10, STATUS='UNKNOWN', FILE= TRIM(ADJUSTL(DirName))//"/"//FileName)
   
@@ -482,8 +481,8 @@ SUBROUTINE WriteOutputEVec( Inum, NEVals, Lsize, VECS, VECS_size, &
 
   USE MyNumbers
   USE IChannels
-!  USE DPara
-!  USE IPara
+  USE DPara
+  USE IPara
 
   INTEGER(KIND=IKIND) Inum, PreSeed, ISSeed, IWidth, IErr, Lsize, VECS_size, NEVals, i
 
@@ -502,8 +501,10 @@ SUBROUTINE WriteOutputEVec( Inum, NEVals, Lsize, VECS, VECS_size, &
   
   FileName= TRIM(Prefix)//TRIM(MiddleName)//TRIM(Postfix)
   !PRINT*, FileName
-  
-!!$  PRINT*, "WriteOutputEVec(): ", FileName
+
+  IF(IWriteFlag.GE.2) THEN
+     PRINT*, "WriteOutputEVec(): ", FileName
+  END IF
 
   OPEN(UNIT= IChEVec, ERR= 40, STATUS= 'UNKNOWN', FILE=TRIM(ADJUSTL(DirName))//"/"//FileName)
 
@@ -540,7 +541,7 @@ END SUBROUTINE WriteOutputEVec
 !
 ! IErr	error code
 
-SUBROUTINE WriteOutputEVecBULK( Inum, NEVals, Lsize, VECS, VECS_size, &
+SUBROUTINE WriteOutputEVecBULK(NEVals, Lsize, VECS, VECS_size, &
      IWidth, PreSeed, DirName, Middlename, IErr)
 
   USE MyNumbers
@@ -548,7 +549,7 @@ SUBROUTINE WriteOutputEVecBULK( Inum, NEVals, Lsize, VECS, VECS_size, &
 !  USE DPara
 !  USE IPara
 
-  INTEGER(KIND=IKIND) Inum, PreSeed, ISSeed, IWidth, IErr, Lsize, VECS_size, NEVals, i,j
+  INTEGER(KIND=IKIND) PreSeed, ISSeed, IWidth, IErr, Lsize, VECS_size, NEVals, i,j
 
   REAL(KIND=RKIND) VECS(VECS_size,VECS_size)
 
@@ -556,23 +557,25 @@ SUBROUTINE WriteOutputEVecBULK( Inum, NEVals, Lsize, VECS, VECS_size, &
   CHARACTER*50 Prefix, Postfix
   CHARACTER*200 FileName
 
-  PRINT*,"DBG: WriteOutputEvecBULK()"
+!!$  PRINT*,"DBG: WriteOutputEvecBULK()"
 
   IErr= 0
 
   WRITE(Prefix, '(A6)') "EvecB_"
-  WRITE(Postfix, '(A2,I5.5,A4,I5.5,A4)') "-c",  PreSeed, "-N", Inum, ".raw" 
+  WRITE(Postfix, '(A2,I5.5,A4)') "-c",  PreSeed, ".raw" 
   !PRINT*, Prefix, Postfix
   
   FileName= TRIM(Prefix)//TRIM(MiddleName)//TRIM(Postfix)
   !PRINT*, FileName
-  
-  PRINT*, "WriteOutputEVecBULK(): ", FileName
 
+  IF(IWriteFlag.GE.2) THEN  
+     PRINT*, "WriteOutputEVecBULK(): ", FileName
+  END IF
+  
   OPEN(UNIT= IChEVec, ERR= 40, STATUS= 'UNKNOWN', FILE=TRIM(ADJUSTL(DirName))//"/"//FileName)
 
   !DO i= 1+( Lsize*( Inum -1) ), 1+( Lsize*( Inum -1) ) + Lsize
-  DO j=1,Inum
+  DO j=1,NEVals
      DO i=1,LSize
         WRITE(UNIT=IChEVec, FMT=45, ERR=50) j, i, VECS(Inum,i)
      ENDDO
@@ -633,7 +636,7 @@ SUBROUTINE WriteOutputEVecProj( Inum, NEVals, &
   CHARACTER*50 Prefix, Postfix
   CHARACTER*200 FileName
   
-  PRINT*,"DBG: WriteOutputEvecProj()"
+!!$  PRINT*,"DBG: WriteOutputEvecProj()"
   IErr= 0
   
   WRITE(Prefix, '(A5)') "Eval_"
@@ -641,9 +644,11 @@ SUBROUTINE WriteOutputEVecProj( Inum, NEVals, &
   !PRINT*, Prefix, Postfix
   
   FileName= TRIM(Prefix)//TRIM(MiddleName)//TRIM(Postfix)
-  
-  PRINT*, "WriteOutputEVecProj(): ", FileName
 
+  IF(IWriteFlag.GE.2) THEN
+     PRINT*, "WriteOutputEVecProj(): ", FileName
+  END IF
+  
   OPEN(UNIT= IChEVec, ERR= 40, STATUS= 'UNKNOWN', FILE=TRIM(ADJUSTL(DirName))//"/"//FileName)
 
   !DO i= 1+( Lsize*( Inum -1) ), 1+( Lsize*( Inum -1) ) + Lsize

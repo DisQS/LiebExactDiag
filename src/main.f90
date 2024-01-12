@@ -543,7 +543,7 @@ PROGRAM LiebExactDiag
 
   END DO ! IWidth cycle
 
-  STOP 'LiebExactDiag'
+  STOP 'LiebExactDiag()'
 
 END PROGRAM
 
