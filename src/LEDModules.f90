@@ -41,8 +41,8 @@ MODULE DPara
   REAL(KIND=RKIND) :: CubeConPot0,CubeConPot1,dCubeConPot
   REAL(KIND=RKIND) :: CubeDis, LiebDis
   REAL(KIND=RKIND) :: CubeConPot, LiebConPot
-  REAL(KIND=RKIND) :: CubeShiftOD, CubeDisOD, CubeDisOD0,CubeDisOD1,dCubeDisOD
-  REAL(KIND=RKIND) :: LiebShiftOD, LiebDisOD, LiebDisOD0,LiebDisOD1,dLiebDisOD
+  REAL(KIND=RKIND) :: OffDShift, OffDShift0,OffDShift1,dOffDShift
+  REAL(KIND=RKIND) :: OffDDis, OffDDis0,OffDDis1,dOffDDis
   REAL(KIND=RKIND) :: flux, flux0,flux1,dflux
   REAL(KIND=RKIND) :: Kappa, MagFlux
   REAL(KIND=RKIND) :: MyEpsilon

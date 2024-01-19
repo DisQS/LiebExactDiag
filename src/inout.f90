@@ -121,36 +121,16 @@ SUBROUTINE Input(IErr)
   PRINT*,"LiebDis      = ", LiebDis
   
   ILine= ILine+1
-  READ(IChInp,15,ERR=20) CubeShiftOD
-  PRINT*,"CubeShiftOD  = ", CubeShiftOD
+  READ(IChInp,15,ERR=20) OffDShift0
+  PRINT*,"OffDShift0   = ", OffDShift0
   
   ILine= ILine+1
-  READ(IChInp,15,ERR=20) CubeDisOD0
-  PRINT*,"CubeDisOD0   = ", CubeDisOD0
+  READ(IChInp,15,ERR=20) OffDShift1
+  PRINT*,"OffDShift1   = ", OffDShift1
   
   ILine= ILine+1
-  READ(IChInp,15,ERR=20) CubeDisOD1
-  PRINT*,"CubeDisOD1   = ", CubeDisOD1
-  
-  ILine= ILine+1
-  READ(IChInp,15,ERR=20) dCubeDisOD
-  PRINT*,"dCubeDisOD   = ", dCubeDisOD
-  
-  ILine= ILine+1
-  READ(IChInp,15,ERR=20) LiebShiftOD
-  PRINT*,"LiebShiftOD  = ", LiebShiftOD
-  
-  ILine= ILine+1
-  READ(IChInp,15,ERR=20) LiebDisOD0
-  PRINT*,"LiebDisOD0   = ", LiebDisOD0
-  
-  ILine= ILine+1
-  READ(IChInp,15,ERR=20) LiebDisOD1
-  PRINT*,"LiebDisOD1   = ", LiebDisOD1
-  
-  ILine= ILine+1
-  READ(IChInp,15,ERR=20) dLiebDisOD
-  PRINT*,"dLiebDisOD   = ", dLiebDisOD
+  READ(IChInp,15,ERR=20) dOffDShift
+  PRINT*,"dOffDShift   = ", dOffDShift
   
 10 FORMAT(16X,I15.1)
   ! 10	FORMAT("IMAXIteration= ",I15.1)
@@ -180,14 +160,13 @@ SUBROUTINE Input(IErr)
      PRINT*,"dCubeDis      = ", dCubeDis
      PRINT*,"LiebConPot    = ", LiebConPot
      PRINT*,"LiebDis       = ", LiebDis
-     PRINT*,"CubeShiftOD   = ", CubeShiftOD 
-     PRINT*,"CubeDisOD0    = ", CubeDisOD0
-     PRINT*,"CubeDisOD1    = ", CubeDisOD1
-     PRINT*,"dCubeDisOD    = ", dCubeDisOD
-     PRINT*,"LiebShiftOD   = ", LiebShiftOD 
-     PRINT*,"LiebDisOD0    = ", LiebDisOD0
-     PRINT*,"LiebDisOD1    = ", LiebDisOD1
-     PRINT*,"dLiebDisOD    = ", dLiebDisOD
+     PRINT*,"OffDShift0    = ", OffDShift0
+     PRINT*,"OffDShift1    = ", OffDShift1
+     PRINT*,"dOffDShift    = ", dOffDShift
+     PRINT*,"OffDDis0      = ", OffDDis0
+     PRINT*,"OffDDis1      = ", OffDDis1
+     PRINT*,"dOffDDis      = ", dOffDDis
+
   ENDIF
 
   CLOSE(IChInp)
@@ -296,11 +275,9 @@ FUNCTION MakeMiddleName(IWidth, IErr)
        "_LD", NINT(100.*ABS(LiebDis)) 
   
   WRITE(mnstr3, &
-   '(A4,I6.6,A4,I6.6,A4,I6.6,A4,I6.6)') &
-       "_oCS", NINT(100.*ABS(CubeShiftOD)), &
-       "_oCD", NINT(100.*ABS(CubeDisOD)), &
-       "_oLS", NINT(100.*ABS(LiebDisOD)), &
-       "_oLD", NINT(100.*ABS(LiebDisOD))
+   '(A3,I6.6,A3,I6.6)') &
+       "_oS", NINT(100.*ABS(OffDShift)), &
+       "_oD", NINT(100.*ABS(OffDDis))
   
 !!$  PRINT*, TRIM(mnstr1)
 !!$  PRINT*, TRIM(mnstr2)

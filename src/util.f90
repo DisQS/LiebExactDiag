@@ -321,7 +321,7 @@ SUBROUTINE MakeLiebOnsiteDisorder(dm, nu, n, ucl, n_uc, nt, matr, size, seed)
      CASE(2) ! checkerboard +/- CubeConPot on each cube site
 
         IF(MOD(n_uc,2) .NE. 0) THEN
-           PRINT*, "main: WRNG, cube size are odd, so we can not achieve 0 potential!"
+           PRINT*, "main: WRNG, cube size are odd, so we cannot achieve 0 potential!"
            PRINT*, "main: WRNG, calculation will proceed, but output is questionable."
         END IF
 
@@ -366,12 +366,12 @@ SUBROUTINE MakeLiebOnsiteDisorder(dm, nu, n, ucl, n_uc, nt, matr, size, seed)
            IF((MOD(col,2)==1 .AND. MOD(row,2)==1) .OR. (MOD(col,2)==0 .AND. MOD(row,2)==0))THEN
               matr( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = CubeConPot + CubeDis*(drandval - 0.5D0)
            ELSE
-              matr( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = -1.0*CubeConPot + CubeDis*(drandval - 0.5D0)
+              matr( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = -CubeConPot + CubeDis*(drandval - 0.5D0)
            END IF
 
         ELSE
            IF((MOD(col,2)==1 .AND. MOD(row,2)==1) .OR. (MOD(col,2)==0 .AND. MOD(row,2)==0))THEN
-              matr( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = -1.0*CubeConPot + CubeDis*(drandval - 0.5D0)
+              matr( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = -CubeConPot + CubeDis*(drandval - 0.5D0)
            ELSE
               matr( (i-1)*ucl + 1 , (i-1)*ucl + 1 ) = CubeConPot + CubeDis*(drandval - 0.5D0)
            END IF
@@ -403,10 +403,13 @@ SUBROUTINE MakeLiebOnsiteDisorder(dm, nu, n, ucl, n_uc, nt, matr, size, seed)
 END SUBROUTINE MakeLiebOnsiteDisorder
 
 !-----------------------------------------------------------------
-SUBROUTINE MakeLiebHoppingDisorder(dm, nu, n, ucl, n_uc, nt, matr, cubesites, liebsites)
+SUBROUTINE MakeLiebHoppingDisorder(dm, nu, n, ucl, n_uc, nt, matr, seed)
 
   USE MyNumbers
   USE IChannels
+  USE DPara
+
+  USE RNG_MT
   
   IMPLICIT NONE
 
@@ -418,17 +421,32 @@ SUBROUTINE MakeLiebHoppingDisorder(dm, nu, n, ucl, n_uc, nt, matr, cubesites, li
        nt, &  ! the whole number of atoms in system
        n_uc   ! the number of unit cells
 
-  INTEGER(KIND=IKIND) i, j, k, ind, cubecount,liebcount
-
+  INTEGER(KIND=IKIND) seed(5), i, j, k, ind, cubecount,liebcount
+  REAL(KIND=RKIND) drandval, offdis
   LOGICAL(KIND=8) Flag
 
   INTEGER(KIND=IKIND), ALLOCATABLE :: ucl_d(:) 
   REAL(KIND=RKIND) matr(nt, nt)! , matr_W( nt, nt )
-  INTEGER(KIND=IKIND) cubesites(n_uc), liebsites(nt-n_uc)
-  
-  PRINT*,"MakeLiebMatrixStructure()"
+  !INTEGER(KIND=IKIND) cubesites(n_uc), liebsites(nt-n_uc)
+
+  PRINT*,"MakeLiebHoppingDisorder()"
 
   !matr(:,:) = 0.0D0
+
+  SELECT CASE(dm)
+  CASE(2)
+     ALLOCATE(ucl_d(dm))
+     ucl_d(1) = 2          ! The first Lieb atoms
+     ucl_d(2) = nu + 2
+  CASE(3)
+     ALLOCATE(ucl_d(dm))
+     ucl_d(1) = 2
+     ucl_d(2) = nu + 2
+     ucl_d(3) = 2 * nu + 2
+  CASE DEFAULT
+     PRINT*, "MakeLiebHoppingDisorder(): Only the 2D and 3D are implemented here --- ABORTING!"
+     STOP
+  END SELECT
 
   ! ----------------------------------------------------------
   ! Start construction for the OFF-DIAGONAL elements of the Lieb Matrix
@@ -441,9 +459,6 @@ SUBROUTINE MakeLiebHoppingDisorder(dm, nu, n, ucl, n_uc, nt, matr, cubesites, li
      ! ----------------------- Cube atoms ------------------------!
      ind = (i-1)*ucl + 1
 
-     cubecount= cubecount+1
-     cubesites(cubecount)=ind
-
      ! hopping terms for Cube atoms 
      DO j=1,dm
 
@@ -455,15 +470,21 @@ SUBROUTINE MakeLiebHoppingDisorder(dm, nu, n, ucl, n_uc, nt, matr, cubesites, li
            Flag = ( i<=n**2 )
         END IF
 
-        matr(ind, (i-1)*ucl + ucl_d(j)) = 1.0D0
-        matr((i-1)*ucl + ucl_d(j), ind) = 1.0D0
+        drandval= DRANDOM5(seed)
+        offdis  = OffDShift + OffDDis*(drandval - 0.5D0)
+        matr(ind, (i-1)*ucl + ucl_d(j)) = offdis
+        matr((i-1)*ucl + ucl_d(j), ind) = offdis
 
         IF(Flag)THEN
-           matr(ind, (i-1)*ucl + ucl_d(j) + (nu-1) - ucl*(n)**(j-1) + ucl*(n)**j) = 1.0D0
-           matr((i-1)*ucl + ucl_d(j) + (nu-1) - ucl*(n)**(j-1) + ucl*(n)**j, ind) = 1.0D0
+           drandval= DRANDOM5(seed)
+           offdis  = OffDShift + OffDDis*(drandval - 0.5D0)
+           matr(ind, (i-1)*ucl + ucl_d(j) + (nu-1) - ucl*(n)**(j-1) + ucl*(n)**j) = offdis
+           matr((i-1)*ucl + ucl_d(j) + (nu-1) - ucl*(n)**(j-1) + ucl*(n)**j, ind) = offdis
         ELSE
-           matr(ind, (i-1)*ucl + ucl_d(j) + (nu-1) - ucl*(n)**(j-1)) = 1.0D0
-           matr((i-1)*ucl + ucl_d(j) + (nu-1) - ucl*(n)**(j-1), ind) = 1.0D0
+           drandval= DRANDOM5(seed)
+           offdis  = OffDShift + OffDDis*(drandval - 0.5D0)
+           matr(ind, (i-1)*ucl + ucl_d(j) + (nu-1) - ucl*(n)**(j-1)) = offdis
+           matr((i-1)*ucl + ucl_d(j) + (nu-1) - ucl*(n)**(j-1), ind) = offdis
         END IF
 
      END DO
@@ -478,19 +499,21 @@ SUBROUTINE MakeLiebHoppingDisorder(dm, nu, n, ucl, n_uc, nt, matr, cubesites, li
 
               ind = (i-1)*ucl + ucl_d(j) + k - 1
               !print*,"Lieb site", ind
-              liebcount= liebcount+1
-              liebsites(liebcount)=ind
 
               !Hopping term
-              IF(k==1)THEN
-                 matr(ind, ind - (j-1)*nu -1) = 1.0D0
-                 matr(ind - (j-1)*nu -1, ind) = 1.0D0                
+              drandval= DRANDOM5(seed)
+              offdis  = OffDShift + OffDDis*(drandval - 0.5D0)
+              IF (k==1) THEN
+                 matr(ind, ind - (j-1)*nu -1) = offdis
+                 matr(ind - (j-1)*nu -1, ind) = offdis                
               ELSE
-                 matr(ind, ind - 1) = 1.0D0
-                 matr(ind - 1, ind) = 1.0D0
+                 matr(ind, ind - 1) = offdis
+                 matr(ind - 1, ind) = offdis
               END IF
-              matr(ind, ind + 1) = 1.0D0
-              matr(ind + 1, ind) = 1.0D0
+              drandval= DRANDOM5(seed)
+              offdis  = OffDShift + OffDDis*(drandval - 0.5D0)
+              matr(ind, ind + 1) = offdis
+              matr(ind + 1, ind) = offdis
 
            END DO
 
@@ -510,23 +533,25 @@ SUBROUTINE MakeLiebHoppingDisorder(dm, nu, n, ucl, n_uc, nt, matr, cubesites, li
 
         ind = (i-1)*ucl + ucl_d(j) + nu - 1
         !print*,"Lieb site", ind
-        liebcount= liebcount+1
-        liebsites(liebcount)=ind
 
+        drandval= DRANDOM5(seed)
+        offdis  = OffDShift + OffDDis*(drandval - 0.5D0)
         IF(nu==1) THEN
-           matr(ind, ind - ucl_d(j) +1) = 1.0D0
-           matr(ind - ucl_d(j) +1, ind) = 1.0D0
+           matr(ind, ind - ucl_d(j) +1) = offdis
+           matr(ind - ucl_d(j) +1, ind) = offdis
         ELSE
-           matr(ind, ind - 1) = 1.0D0
-           matr(ind - 1, ind) = 1.0D0
+           matr(ind, ind - 1) = offdis
+           matr(ind - 1, ind) = offdis
         END IF
 
+        drandval= DRANDOM5(seed)
+        offdis  = OffDShift + OffDDis*(drandval - 0.5D0)
         IF(Flag)THEN
-           matr(ind, (i-1)*ucl + 1 - (n-1)*ucl*(n)**(j-1)) = 1.0D0
-           matr((i-1)*ucl + 1 - (n-1)*ucl*(n)**(j-1), ind) = 1.0D0
+           matr(ind, (i-1)*ucl + 1 - (n-1)*ucl*(n)**(j-1)) = offdis
+           matr((i-1)*ucl + 1 - (n-1)*ucl*(n)**(j-1), ind) = offdis
         ELSE
-           matr(ind, (i-1)*ucl + 1 + ucl*(n)**(j-1)) = 1.0D0
-           matr((i-1)*ucl + 1 + ucl*(n)**(j-1), ind) = 1.0D0
+           matr(ind, (i-1)*ucl + 1 + ucl*(n)**(j-1)) = offdis
+           matr((i-1)*ucl + 1 + ucl*(n)**(j-1), ind) = offdis
         END IF
      END DO
 
