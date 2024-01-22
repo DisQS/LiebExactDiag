@@ -134,15 +134,15 @@ SUBROUTINE Input(IErr)
   
   ILine= ILine+1
   READ(IChInp,15,ERR=20) OffDDis0
-  PRINT*,"OffDDis0   = ", OffDDis0
+  PRINT*,"OffDDis0     = ", OffDDis0
   
   ILine= ILine+1
   READ(IChInp,15,ERR=20) OffDDis1
-  PRINT*,"OffDDis1   = ", OffDDis1
+  PRINT*,"OffDDis1     = ", OffDDis1
   
   ILine= ILine+1
   READ(IChInp,15,ERR=20) dOffDDis
-  PRINT*,"dOffDDis   = ", dOffDDis
+  PRINT*,"dOffDDis     = ", dOffDDis
   
 10 FORMAT(16X,I15.1)
   ! 10	FORMAT("IMAXIteration= ",I15.1)
