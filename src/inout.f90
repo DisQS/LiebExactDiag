@@ -132,6 +132,18 @@ SUBROUTINE Input(IErr)
   READ(IChInp,15,ERR=20) dOffDShift
   PRINT*,"dOffDShift   = ", dOffDShift
   
+  ILine= ILine+1
+  READ(IChInp,15,ERR=20) OffDDis0
+  PRINT*,"OffDDis0   = ", OffDDis0
+  
+  ILine= ILine+1
+  READ(IChInp,15,ERR=20) OffDDis1
+  PRINT*,"OffDDis1   = ", OffDDis1
+  
+  ILine= ILine+1
+  READ(IChInp,15,ERR=20) dOffDDis
+  PRINT*,"dOffDDis   = ", dOffDDis
+  
 10 FORMAT(16X,I15.1)
   ! 10	FORMAT("IMAXIteration= ",I15.1)
 15 FORMAT(16X,F18.9)
@@ -140,32 +152,32 @@ SUBROUTINE Input(IErr)
   ! check the parameters for validity
   
   IF(IWriteFlag.GE.2) THEN
-     PRINT*,"ISeed         = ", ISeed
-     PRINT*,"NSeed         = ", NSeed
-     PRINT*,"Dim           = ", Dim
-     PRINT*,"Nx            = ", Nx
-     PRINT*,"IBCFlag       = ", IBCFlag
-     PRINT*,"IRNGFlag      = ", IRNGFlag
-     PRINT*,"IKeepFlag     = ", IKeepFlag
-     PRINT*,"IWriteFlag    = ", IWriteFlag
-     PRINT*,"IStateFlag    = ", IStateFlag
-     PRINT*,"Width0        = ", Width0
-     PRINT*,"Width1        = ", Width1
-     PRINT*,"dWidth        = ", dWidth
-     PRINT*,"CubeConPot0   = ", CubeConPot0
-     PRINT*,"CubeConPot1   = ", CubeConPot1
-     PRINT*,"dCubeConPot   = ", dCubeConPot
-     PRINT*,"CubeDis0      = ", CubeDis0
-     PRINT*,"CubeDis1      = ", CubeDis1
-     PRINT*,"dCubeDis      = ", dCubeDis
-     PRINT*,"LiebConPot    = ", LiebConPot
-     PRINT*,"LiebDis       = ", LiebDis
-     PRINT*,"OffDShift0    = ", OffDShift0
-     PRINT*,"OffDShift1    = ", OffDShift1
-     PRINT*,"dOffDShift    = ", dOffDShift
-     PRINT*,"OffDDis0      = ", OffDDis0
-     PRINT*,"OffDDis1      = ", OffDDis1
-     PRINT*,"dOffDDis      = ", dOffDDis
+     PRINT*,"ISeed          = ", ISeed
+     PRINT*,"NSeed          = ", NSeed
+     PRINT*,"Dim            = ", Dim
+     PRINT*,"Nx             = ", Nx
+     PRINT*,"IBCFlag        = ", IBCFlag
+     PRINT*,"IRNGFlag       = ", IRNGFlag
+     PRINT*,"IKeepFlag      = ", IKeepFlag
+     PRINT*,"IWriteFlag     = ", IWriteFlag
+     PRINT*,"IStateFlag     = ", IStateFlag
+     PRINT*,"Width0         = ", Width0
+     PRINT*,"Width1         = ", Width1
+     PRINT*,"dWidth         = ", dWidth
+     PRINT*,"0 CubeConPot0  = ", CubeConPot0
+     PRINT*,"0 CubeConPot1  = ", CubeConPot1
+     PRINT*,"0 dCubeConPot  = ", dCubeConPot
+     PRINT*,"1 CubeDis0     = ", CubeDis0
+     PRINT*,"1 CubeDis1     = ", CubeDis1
+     PRINT*,"1 dCubeDis     = ", dCubeDis
+     PRINT*,"2 LiebConPot   = ", LiebConPot
+     PRINT*,"3 LiebDis      = ", LiebDis
+     PRINT*,"4 OffDShift0   = ", OffDShift0
+     PRINT*,"4 OffDShift1   = ", OffDShift1
+     PRINT*,"4 dOffDShift   = ", dOffDShift
+     PRINT*,"5 OffDDis0     = ", OffDDis0
+     PRINT*,"5 OffDDis1     = ", OffDDis1
+     PRINT*,"5 dOffDDis     = ", dOffDDis
 
   ENDIF
 

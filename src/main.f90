@@ -115,17 +115,20 @@ PROGRAM LiebExactDiag
      n_uc = IWidth**Dim   ! number of unit cells
      LSize = ucl * n_uc   ! number of sites
 
-     PRINT*,"#unit cells=", n_uc, " elements/unit cell=", ucl, " total sites=", LSize
-
+     IF(IWriteFlag.GE.1) THEN
+        PRINT*,"main: total sites=", LSize
+        PRINT*,"main: #unit cells=", n_uc, " elements/unit cell=", ucl
+     ENDIF
+     
      !--------------------------------------------------------------------------
-     ! Setting the parameters size passed to function DSYEV
+     ! Setting the parameters passed to function DSYEV
      !--------------------------------------------------------------------------
 
      LDA = LSize
      LWMAX = 100000
 
      ! ----------------------------------------------------------
-     ! ALLOCATing memory
+     ! ALLOCATing memory and initializing
      ! ----------------------------------------------------------
 
      ALLOCATE( HAMMAT(LSize, LSize) )
@@ -170,14 +173,17 @@ PROGRAM LiebExactDiag
      CASE(1) ! CubeDis
         PRINT*,"main: (1) CubeDis-loop"
         flux0= CubeDis0; flux1= CubeDis1; dflux= dCubeDis
-     CASE(2) ! CubeDis
-        PRINT*,"main: (2) LiebDis-loop"
+     CASE(2) ! LiebConPot
+        PRINT*,"main: (2) LiebConPot-loop"
         PRINT*,"main: NOT implemented yet --- ABORTING!"; STOP
-     CASE(3) ! OffDShift
-        PRINT*,"main: (3) CubeShiftOD-loop"
+     CASE(3) ! LiebDis
+        PRINT*,"main: (3) LiebDis-loop"
+        PRINT*,"main: NOT implemented yet --- ABORTING!"; STOP
+     CASE(4) ! OffDShift
+        PRINT*,"main: (4) OffDShift-loop"
         flux0= OffDShift0; flux1= OffDShift1; dflux= dOffDShift
-     CASE(4) ! OffDDis
-        PRINT*,"main: (4) CubeDisOD-loop"
+     CASE(5) ! OffDDis
+        PRINT*,"main: (5) OffDDis-loop"
         flux0= OffDDis0; flux1= OffDDis1; dflux= dOffDDis
      CASE DEFAULT
         PRINT*,"main: NOT implemented --- ABORTING!"; STOP
@@ -198,7 +204,7 @@ PROGRAM LiebExactDiag
            CubeDis= flux
         CASE(4)
            OffDShift= flux
-        CASE(6)
+        CASE(5)
            OffDDis=flux
         END SELECT
 
