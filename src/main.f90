@@ -80,8 +80,11 @@ PROGRAM LiebExactDiag
   ! set: git tag -a v0.0 -m 'Version 0.0'; git push --tags
   ! ----------------------------------------------------------
 #ifdef git
-  PRINT*,"LiebExactDiag ", TRIM("GITVERSION"), ", ", &
-       TRIM("GITBRANCH"), ", compiled: ", TRIM("COMPILED")
+  PRINT*,"-------------------------------------------------------"
+  PRINT*,"LiebExactDiag() version : ", TRIM("GITVERSION")
+  PRINT*,"                branch  : ", TRIM("GITBRANCH")
+  PRINT*,"                compiled: ", TRIM("COMPILED")
+  PRINT*,"-------------------------------------------------------"
 #else
   PRINT*,"LiebExactDiag()"
 #endif
