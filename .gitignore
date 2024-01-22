@@ -1,3 +1,7 @@
+# Temporary files
+*tmp.f90
+\#*.*
+
 # Prerequisites
 *.d
 
@@ -31,8 +35,24 @@
 *.exe
 *.out
 *.app
+*.IC
+*.GF
 
 # Emacs backups
 *.*~
 .#*
 #*.*#
+
+# Data files
+*.raw
+*.csv
+*.log
+*.txt
+
+# LNed files
+makefile
+
+# graphics files
+*.vsz
+*.pdf
+*.nb
