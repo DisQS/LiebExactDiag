@@ -398,11 +398,16 @@ PROGRAM LiebExactDiag
 !!$
 !!$           END DO
 
-           
-           DO i=1,Lsize
-              PRINT*,i, HAMMAT(i,i)
-           END DO
-           !PAUSE
+           ! ----------------------------------------------------------
+           ! PRINT Hamiltonian for debugging when needed
+           ! ----------------------------------------------------------
+
+           IF(IWriteFLAG.GE.4) THEN
+              DO i=1,Lsize
+                 PRINT*,i, HAMMAT(i,i)
+              END DO
+              !PAUSE
+           END IF
 
            ! ----------------------------------------------------------
            ! START the diagonalizstion process

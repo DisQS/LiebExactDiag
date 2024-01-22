@@ -256,7 +256,7 @@ FUNCTION MakeMiddleName(IWidth, IErr)
   CHARACTER*200 middlenamestr, mnstr1, mnstr2, mnstr3
   CHARACTER*1 SymbolCP,symbolLP
   
-  PRINT*,"DBG: MakeMiddleName()"
+  !PRINT*,"DBG: MakeMiddleName()"
 
   IErr= 0
 
