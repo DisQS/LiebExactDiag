@@ -46,10 +46,8 @@ cat > ${jobfile} << EOD
 #!/bin/bash
 #!/bin/bash
 #SBATCH --nodes=1
-##SBATCH --ntasks-per-node=24
-#SBATCH --ntasks-per-node=4
-##SBATCH --time=48:00:00
-#SBATCH --time=00:00:20
+#SBATCH --ntasks-per-node=24
+#SBATCH --time=48:00:00
 ##SBATCH --mem-per-cpu=31418
 ##SBATCH --partition=hmem
 
@@ -110,7 +108,7 @@ echo parallel \$MY_PARALLEL_OPTS srun \$MY_SRUN_OPTS \$MY_EXEC ::: {1..$config}
 parallel \$MY_PARALLEL_OPTS srun \$MY_SRUN_OPTS \$MY_EXEC ::: {1..$config}
 
 #zip -mv LED-$CubeConPot.zip Evec*.raw
-zip -um inp.zip LEDdiag-CP$CubeConPot-*.inp
+zip -um inp.zip LEDdiag-oD$OffDDis-*.inp
 zip -um sh.zip *.sh
 
 exit 0
