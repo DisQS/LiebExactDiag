@@ -363,7 +363,7 @@ SUBROUTINE CheckOutput( IWidth, PreSeed, DirName, MiddleName, IErr )
 !  IErr= 0
 
   WRITE(Prefix, '(A5)') "Eval_"
-  WRITE(Postfix, '(A2,I5.5,A4)') "-c",  PreSeed, ".raw" 
+  WRITE(Postfix, '(A2,I5.5,A5)') "-c",  PreSeed, ".raw" 
   !PRINT*, Prefix, Postfix
   
   FileName= TRIM(Prefix)//TRIM(MiddleName)//TRIM(Postfix)
@@ -419,7 +419,7 @@ SUBROUTINE WriteOutputEVal(NEVals,EIGS, IWidth,PreSeed, DirName,MiddleName, IErr
   IErr= 0
 
   WRITE(Prefix, '(A5)') "Eval_"
-  WRITE(Postfix, '(A2,I5.5,A4)') "-c",  PreSeed, ".raw" 
+  WRITE(Postfix, '(A2,I5.5,A5)') "-c",  PreSeed, ".raw" 
   !PRINT*, Prefix, Postfix
   
   FileName= TRIM(Prefix)//TRIM(MiddleName)//TRIM(Postfix)
@@ -485,7 +485,7 @@ SUBROUTINE WriteOutputEVec( Inum, NEVals, Lsize, VECS, VECS_size, &
   IErr= 0
 
   WRITE(Prefix, '(A5)') "Evec_"
-  WRITE(Postfix, '(A2,I5.5A2,I5.5,A4)') "-c",  PreSeed, "-N", Inum, ".raw" 
+  WRITE(Postfix, '(A2,I5.5A2,I5.5,A5)') "-c",  PreSeed, "-N", Inum, ".raw" 
   !PRINT*, Prefix, Postfix
   
   FileName= TRIM(Prefix)//TRIM(MiddleName)//TRIM(Postfix)
@@ -551,7 +551,7 @@ SUBROUTINE WriteOutputEVecBULK(NEVals, Lsize, VECS, VECS_size, &
   IErr= 0
 
   WRITE(Prefix, '(A6)') "EvecB_"
-  WRITE(Postfix, '(A2,I5.5,A4)') "-c",  PreSeed, ".raw" 
+  WRITE(Postfix, '(A2,I5.5,A5)') "-c",  PreSeed, ".raw" 
   !PRINT*, Prefix, Postfix
   
   FileName= TRIM(Prefix)//TRIM(MiddleName)//TRIM(Postfix)
@@ -627,7 +627,7 @@ SUBROUTINE WriteOutputEVecProj( Inum, NEVals, &
   IErr= 0
   
   WRITE(Prefix, '(A5)') "Eval_"
-  WRITE(Postfix, '(A2,I5.5,A4)') "-c",  PreSeed, ".raw" 
+  WRITE(Postfix, '(A2,I5.5,A5)') "-c",  PreSeed, ".raw" 
   !PRINT*, Prefix, Postfix
   
   FileName= TRIM(Prefix)//TRIM(MiddleName)//TRIM(Postfix)
