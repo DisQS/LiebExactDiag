@@ -22,7 +22,7 @@ jobdir=$currdir
 binarydir=$HOME/Projects/LiebExactDiag/EXE
 #binarydir=/storage/disqs/LiebSparseDiag/EXE
 
-for CubeConPot in 0.0 1.0 2.0 5.0 10.0 20.0 50.0 100.0
+for CubeConPot in 0.0 1.0 2.0 5.0 #10.0 20.0 50.0 100.0
     #1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 20.0 50.0 60.0 70.0 80.0
 do
 
@@ -46,7 +46,7 @@ cat > ${jobfile} << EOD
 #!/bin/bash
 #!/bin/bash
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=48
+#SBATCH --ntasks-per-node=24
 #SBATCH --time=48:00:00
 #SBATCH --mem-per-cpu=31418
 #SBATCH --partition=hmem
@@ -81,7 +81,7 @@ echo "dWidth        = 2          ">>  \$inpfile #
 echo "CubeConPot    = $CubeConPot      ">>  \$inpfile #
 echo "CubeDis0      = 0.0        ">>  \$inpfile #
 echo "CubeDis1      = 10.0            ">>  \$inpfile #
-echo "dCubeDis      = 5.0           ">>  \$inpfile #
+echo "dCubeDis      = 0.25           ">>  \$inpfile #
 #echo "LiebDis0      = $CubeConPot      ">>  \$inpfile #
 echo "LiebConPot    = 0.0            ">>  \$inpfile #
 echo "LiebDis0      = 0.0            ">>  \$inpfile #

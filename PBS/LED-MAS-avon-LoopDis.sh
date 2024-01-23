@@ -97,11 +97,12 @@ MY_PARALLEL_OPTS="-N 1 --delay .2 -j \$SLURM_NTASKS --joblog parallel-\${SLURM_J
 MY_SRUN_OPTS="-N 1 -n 1 --exclusive"
 MY_EXEC="$binarydir/$binary <LEDdiag-CP$CubeConPot-{}.inp"
 
+echo parallel \$MY_PARALLEL_OPTS srun \$MY_SRUN_OPTS \$MY_EXEC ::: {1..$config}
 parallel \$MY_PARALLEL_OPTS srun \$MY_SRUN_OPTS \$MY_EXEC ::: {1..$config}
 
 #zip -mv LED-$CubeConPot.zip Evec*.raw
-zip -m inp.zip LEDdiag-CP$CubeConPot-*.inp
-zip -m sh.zip *.sh
+zip -um inp.zip LEDdiag-CP$CubeConPot-*.inp
+zip -um sh.zip *.sh
 
 exit 0
 
