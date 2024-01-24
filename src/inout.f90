@@ -161,6 +161,7 @@ SUBROUTINE Input(IErr)
      PRINT*,"IKeepFlag      = ", IKeepFlag
      PRINT*,"IWriteFlag     = ", IWriteFlag
      PRINT*,"IStateFlag     = ", IStateFlag
+     PRINT*,"IFluxFlag      = ", IFluxFlag
      PRINT*,"Width0         = ", Width0
      PRINT*,"Width1         = ", Width1
      PRINT*,"dWidth         = ", dWidth
