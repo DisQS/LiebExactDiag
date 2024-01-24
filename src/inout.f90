@@ -319,7 +319,7 @@ SUBROUTINE MakeDataDir(IWidth, dirname, IErr)
   !CHARACTER*200 MakeDataDir
 
   LOGICAL*4  ierr1
-  EXTERNAL SYSTEM
+  !EXTERNAL SYSTEM
   
   PRINT*, "MakeDataDir(): checking for ", TRIM(dirname)
 

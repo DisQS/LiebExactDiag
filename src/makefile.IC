@@ -4,8 +4,9 @@
 #
 #-----------------------------------------------------------------
 # exact diagonalization of 2D and 3D extended Lieb models
+# see https://github.com/DisQS/LiebExactDiag
 #-----------------------------------------------------------------
-# SCRTP:
+# SCRTP desktop:
 # module load intel imkl
 
 F77 = ifort -xHOST
