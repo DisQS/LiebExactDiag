@@ -33,7 +33,7 @@ echo $jobname
 
 jobfile=`printf "$jobname.sh"`
 logfile=`printf "$jobname.log"`
-jobdir="LED-$size"
+jobdir="LED-$CPflag-$size-oDx"
 mkdir -p $jobdir
 
 echo "binarydir=" $binarydir " jobdir=" $jobdir 
