@@ -486,7 +486,7 @@ SUBROUTINE WriteOutputEVec( Inum, NEVals, Lsize, VECS, VECS_size, &
   IErr= 0
 
   WRITE(Prefix, '(A5)') "Evec_"
-  WRITE(Postfix, '(A2,I5.5A2,I5.5,A5)') "-c",  PreSeed, "-N", Inum, ".raw" 
+  WRITE(Postfix, '(A2,I5.5,A2,I5.5,A5)') "-c",  PreSeed, "-N", Inum, ".raw" 
   !PRINT*, Prefix, Postfix
   
   FileName= TRIM(Prefix)//TRIM(MiddleName)//TRIM(Postfix)
